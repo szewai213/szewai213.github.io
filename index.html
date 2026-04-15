@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GapSense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mint-primary: #10B981;
+            --mint-dark: #064E3B;
+            --mint-bg: #F1F8E9;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mint-bg);
+            color: var(--mint-dark);
+            margin: 0; padding: 0;
+            overflow: hidden;
+            width: 100vw; height: 100vh;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+        }
+        .nav-btn {
+            transition: all 0.2s;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-btn.active {
+            background: var(--mint-dark);
+            color: white;
+            transform: scale(1.05);
+        }
+        .game-canvas {
+            width: 100%; height: 58vh;
+            position: relative;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            background: #f1f8e9;
+        }
+
+        /* 星期一：發射筆樣式 */
+        .target-circle {
+            width: 160px; height: 160px; border-radius: 50%;
+            background: #e5e7eb; border: 6px solid #9ca3af;
+            position: relative; box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10;
+        }
+        .pen-stuck {
+            position: absolute; width: 8px; height: 65px;
+            bottom: 50%; left: 50%;
+            transform-origin: bottom center;
+            z-index: 20;
+        }
+        .pen-body { width: 6px; height: 50px; background: #10B981; margin: 0 auto; border-radius: 2px; }
+        .pen-tip { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 12px solid #374151; margin: 0 auto; }
+        
+        .shooter-pen {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            z-index: 30;
+        }
+
+        /* 星期五：TGIF Pop 樣式 */
+        #logo-container {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            cursor: pointer;
+            display: flex; flex-direction: column; align-items: center;
+            will-change: transform;
+        }
+        
+        #logo-container.bumping {
+            transition: transform 0.05s ease-out;
+            transform: scale(var(--bump-scale, 1)) !important;
+        }
+
+        .shake { animation: shake 0.15s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .confetti { position: absolute; width: 6px; height: 6px; pointer-events: none; z-index: 50; }
+        .ai-bubble {
+            position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+            background: white; padding: 10px 14px; border-radius: 16px;
+            font-size: 0.75rem; font-weight: 700; width: 180px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 40;
+            display: none; border: 2px solid #10B981;
+            text-align: center; color: #064E3B;
+        }
+
+        /* 通用彈窗 */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            padding: 20px;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <header class="p-4 shrink-0 text-center">
+        <h1 class="text-2xl font-black tracking-tight uppercase">GapSense</h1>
+        <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest italic mb-4">Weekly De-stress</p>
+        
+        <div class="flex justify-between gap-2 overflow-x-auto no-scrollbar max-w-sm mx-auto">
+            <div onclick="switchDay(1)" id="btn-1" class="nav-btn flex-1 py-3 glass-card font-black text-xs">M</div>
+            <div onclick="switchDay(2)" id="btn-2" class="nav-btn flex-1 py-3 glass-card font-black text-xs">T</div>
+            <div onclick="switchDay(3)" id="btn-3" class="nav-btn flex-1 py-3 glass-card font-black text-xs">W</div>
+            <div onclick="switchDay(4)" id="btn-4" class="nav-btn flex-1 py-3 glass-card font-black text-xs">T</div>
+            <div onclick="switchDay(5)" id="btn-5" class="nav-btn flex-1 py-3 glass-card font-black text-xs">F</div>
+            <div onclick="switchDay(6)" id="btn-6" class="nav-btn flex-1 py-3 glass-card font-black text-xs">S</div>
+            <div onclick="switchDay(0)" id="btn-0" class="nav-btn flex-1 py-3 glass-card font-black text-xs">S</div>
+        </div>
+    </header>
+
+    <main id="game-container" class="flex-1 flex flex-col items-center justify-between py-4">
+        <div id="game-scene" class="game-canvas"></div>
+        
+        <div class="w-full max-w-xs px-4 mb-6">
+            <div class="glass-card p-4 flex justify-between items-center shadow-sm">
+                <div id="status-box">
+                    <p id="stat-label" class="text-[9px] text-gray-400 font-black uppercase italic tracking-widest">Status</p>
+                    <p id="stat-value" class="text-xl font-black">Ready</p>
+                </div>
+                <div id="ai-trigger" class="text-2xl cursor-pointer">✨</div>
+            </div>
+        </div>
+    </main>
+
+    <div id="game-modal" class="modal-overlay">
+        <div class="glass-card bg-white p-8 max-w-xs w-full text-center shadow-2xl">
+            <h3 id="modal-title" class="font-black text-xl mb-2">任務完成</h3>
+            <div id="modal-content" class="mb-6 text-sm text-gray-500"></div>
+            <button id="modal-btn" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold">繼續</button>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "";
+        let currentDay = 1;
+        
+        let monState = 'setup', monLevel = 1, monPensLeft = 0, monLives = 3, monRotation = 0, monStuckAngles = [], monBossImg = null, monIsShooting = false, monAnimId = null;
+        let tueAnimId = null, tueCanvas, tueCtx, tueState = 'setup', tueScore = 0, tueLives = 3, tueEnvelopes = [], tueParticles = [], tueTrail = [], tueIsSwiping = false, tueFrameCount = 0;
+        let tueHighScore = parseInt(localStorage.getItem('gapSense_tueHighScore')) || 0;
+        let wedAnimId = null, wedStartTime = 0, wedIsPressing = false, wedLastVibeTime = 0, wedPerfectBrews = parseInt(localStorage.getItem('gapSense_wedScore')) || 0;
+        let thuStep = 0;
+        let friPopProgress = 0, friIsExploded = false, friLastPopTime = Date.now(), friCustomImg = null;
+
+        async function callGemini(prompt, system = "You are a witty zen master.") {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: system }] }
+                    })
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
+            } catch { return "繼續加油！"; }
+        }
+
+        function switchDay(day) {
+            currentDay = day;
+            if (monAnimId) cancelAnimationFrame(monAnimId);
+            if (tueAnimId) cancelAnimationFrame(tueAnimId);
+            if (wedAnimId) cancelAnimationFrame(wedAnimId);
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-${day}`);
+            if(activeBtn) activeBtn.classList.add('active');
+            
+            friPopProgress = 0; friIsExploded = false;
+            thuStep = 0;
+            if (day === 2) tueState = 'setup';
+            render();
+        }
+
+        function render() {
+            const scene = document.getElementById('game-scene');
+            const statValue = document.getElementById('stat-value');
+            const statLabel = document.getElementById('stat-label');
+            const aiTrigger = document.getElementById('ai-trigger');
+            scene.innerHTML = '';
+            aiTrigger.style.display = 'none';
+
+            if (currentDay === 1) {
+                renderMonday(scene);
+                statLabel.innerText = monState === 'setup' ? "READY" : "PENS LEFT";
+                statValue.innerText = monState === 'setup' ? "LEVEL " + monLevel : monPensLeft;
+            } else if (currentDay === 2) {
+                renderTuesday(scene);
+                statLabel.innerText = "MAILS SLICED";
+                statValue.innerText = tueScore;
+            } else if (currentDay === 3) {
+                renderWednesday(scene);
+                statLabel.innerText = "PERFECT CUPS";
+                statValue.innerText = wedPerfectBrews;
+            } else if (currentDay === 4) {
+                renderThursday(scene);
+                statLabel.innerText = "SENSORY STEP";
+                statValue.innerText = (thuStep + 1) + "/3";
+            } else if (currentDay === 5) {
+                aiTrigger.style.display = 'block';
+                renderFriday(scene);
+                statLabel.innerText = "RELEASE PROGRESS";
+                statValue.innerText = Math.floor(friPopProgress) + "%";
+            } else {
+                scene.innerHTML = '<div class="glass-card p-10 font-bold text-center italic text-gray-400">COMING SOON</div>';
+                statLabel.innerText = "STATUS";
+                statValue.innerText = "LOCKED";
+            }
+        }
+
+        // --- 星期一：發射筆遊戲 ---
+        function renderMonday(scene) {
+            if (monState === 'setup') {
+                scene.innerHTML = `
+                    <div class="glass-card p-6 flex flex-col items-center gap-4 w-72">
+                        <h2 class="font-black text-xs uppercase text-emerald-800 tracking-widest">Monday Pen Shot</h2>
+                        <div id="mon-upload" class="w-32 h-32 rounded-full border-2 border-dashed border-emerald-400 bg-white flex items-center justify-center overflow-hidden cursor-pointer relative">
+                            ${monBossImg ? `<img src="${monBossImg}" class="w-full h-full object-cover">` : `<span class="text-[10px] font-bold text-emerald-400 text-center uppercase">Upload Target</span>`}
+                        </div>
+                        <input type="file" id="mon-file" class="hidden" accept="image/*">
+                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Level ${monLevel}</div>
+                        <button onclick="startMonGame()" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-black text-xs active:scale-95 transition-transform uppercase tracking-widest">Start Game</button>
+                    </div>
+                `;
+                document.getElementById('mon-upload').onclick = () => document.getElementById('mon-file').click();
+                document.getElementById('mon-file').onchange = (e) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => { monBossImg = ev.target.result; render(); };
+                    reader.readAsDataURL(e.target.files[0]);
+                };
+            } else {
+                scene.innerHTML = `
+                    <div id="mon-play-area" class="w-full h-full relative flex items-center justify-center">
+                        <div id="mon-stats" class="absolute top-4 left-4 text-[10px] font-black uppercase tracking-widest">
+                            Lvl ${monLevel} | ❤️ <span id="mon-lives-display">${monLives}</span>
+                        </div>
+                        <div id="mon-target-wrap" class="relative">
+                            <div id="mon-target-circle" class="target-circle overflow-hidden">
+                                ${monBossImg ? `<img src="${monBossImg}" class="w-full h-full object-cover">` : ''}
+                            </div>
+                            <div id="mon-stuck-layer" class="absolute inset-0 pointer-events-none"></div>
+                        </div>
+                        <div id="mon-shooter" class="shooter-pen">
+                            <div class="pen-body"></div><div class="pen-tip"></div>
+                        </div>
+                    </div>
+                `;
+                monAnimId = requestAnimationFrame(monLoop);
+                document.getElementById('mon-play-area').onpointerdown = (e) => { e.preventDefault(); shootMonPen(); };
+            }
+        }
+        function startMonGame() {
+            if (!monBossImg) return showModal("提示", "請先上傳目標頭像。", "OK", () => {});
+            monState = 'playing';
+            monPensLeft = monLevel === 3 ? 10 : 6 + (monLevel * 2);
+            monStuckAngles = []; monLives = 3; render();
+        }
+        function monLoop() {
+            if (currentDay !== 1 || monState !== 'playing') return;
+            let speed = 1.2 + (monLevel * 0.4);
+            if (monLevel === 2) speed *= (Math.sin(Date.now() / 700) * 0.5 + 1.1);
+            if (monLevel === 3) speed *= (Math.sin(Date.now() / 500) * 0.8 + 1);
+            monRotation += speed;
+            const target = document.getElementById('mon-target-circle');
+            const layer = document.getElementById('mon-stuck-layer');
+            if (target) target.style.transform = `rotate(${monRotation}deg)`;
+            if (layer) layer.style.transform = `rotate(${monRotation}deg)`;
+            monAnimId = requestAnimationFrame(monLoop);
+        }
+        function shootMonPen() {
+            if (monIsShooting || monState !== 'playing') return;
+            monIsShooting = true;
+            const shooter = document.getElementById('mon-shooter');
+            shooter.style.transition = 'transform 0.1s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
+            shooter.style.transform = 'translateX(-50%) translateY(-200px)';
+            setTimeout(() => {
+                const hitAngle = (180 - (monRotation % 360) + 360) % 360;
+                const isCollision = monStuckAngles.some(a => {
+                    let d = Math.abs(a - hitAngle);
+                    return (d > 180 ? 360 - d : d) < 12; 
+                });
+                if (isCollision) {
+                    monLives--; document.getElementById('mon-lives-display').innerText = monLives;
+                    const wrap = document.getElementById('mon-target-wrap');
+                    wrap.classList.add('shake');
+                    setTimeout(() => wrap.classList.remove('shake'), 200);
+                    if (monLives <= 0) {
+                        showModal("遊戲結束", "目標太堅強了，再試一次吧！", "重新開始", () => {
+                            monLives = 3; monLevel = 1; monState = 'setup'; render();
+                        });
+                    }
+                } else {
+                    monStuckAngles.push(hitAngle);
+                    const layer = document.getElementById('mon-stuck-layer');
+                    if (layer) {
+                        const pen = document.createElement('div');
+                        pen.className = 'pen-stuck';
+                        pen.style.transform = `translateX(-50%) rotate(${hitAngle}deg) translateY(-80px)`;
+                        pen.innerHTML = `<div class="pen-body"></div><div class="pen-tip"></div>`;
+                        layer.appendChild(pen);
+                    }
+                    monPensLeft--; document.getElementById('stat-value').innerText = monPensLeft;
+                    if (monPensLeft <= 0) {
+                        showModal("恭喜！", `第 ${monLevel} 級順利完成！`, monLevel >= 3 ? "壓力全消！" : "挑戰下一級", () => {
+                            if (monLevel >= 3) { monLevel = 1; monState = 'setup'; render(); }
+                            else { monLevel++; startMonGame(); }
+                        });
+                    }
+                }
+                shooter.style.transition = 'none'; shooter.style.transform = 'translateX(-50%)';
+                monIsShooting = false;
+            }, 100);
+        }
+
+        // --- 星期二：郵件切切樂 (邊界優化，防止飛出頂部) ---
+        function renderTuesday(scene) {
+            if (tueState === 'setup') {
+                scene.innerHTML = `
+                    <div class="glass-card p-8 flex flex-col items-center gap-6 w-72 text-center">
+                        <div class="text-4xl">📧</div>
+                        <h2 class="font-black text-xs uppercase text-emerald-800 tracking-widest">Tuesday Mail Slice</h2>
+                        <div class="space-y-2">
+                            <p class="text-[10px] text-gray-500 font-bold leading-relaxed uppercase">
+                                郵件正在吞噬你的時間！<br>
+                                滑動螢幕，把 <span class="text-red-500 italic font-black">ASAP</span> 郵件通通切碎！
+                            </p>
+                        </div>
+                        <button onclick="startTueGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xs active:scale-95 transition-transform uppercase tracking-widest shadow-lg">進入戰鬥</button>
+                    </div>
+                `;
+            } else {
+                scene.innerHTML = `<canvas id="tue-canvas" class="w-full h-full absolute inset-0 z-20 touch-none"></canvas>`;
+                tueCanvas = document.getElementById('tue-canvas');
+                tueCtx = tueCanvas.getContext('2d');
+                tueCanvas.width = scene.clientWidth;
+                tueCanvas.height = scene.clientHeight;
+
+                tueCanvas.onpointerdown = (e) => {
+                    tueIsSwiping = true;
+                    const rect = tueCanvas.getBoundingClientRect();
+                    tueTrail = [{ x: e.clientX - rect.left, y: e.clientY - rect.top }];
+                    tueCanvas.setPointerCapture(e.pointerId);
+                };
+                tueCanvas.onpointermove = (e) => {
+                    if (tueIsSwiping) {
+                        const rect = tueCanvas.getBoundingClientRect();
+                        tueTrail.push({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                        if (tueTrail.length > 12) tueTrail.shift();
+                        checkTueSlice();
+                    }
+                };
+                tueCanvas.onpointerup = () => { tueIsSwiping = false; };
+
+                if (tueAnimId) cancelAnimationFrame(tueAnimId);
+                tueLoop();
+            }
+        }
+
+        function startTueGame() {
+            tueState = 'playing';
+            tueScore = 0; tueLives = 3;
+            tueEnvelopes = []; tueParticles = []; tueFrameCount = 0;
+            render();
+        }
+
+        function tueLoop() {
+            if (currentDay !== 2 || tueState !== 'playing') return;
+            tueFrameCount++;
+
+            const spawnRate = Math.max(12, 55 - Math.floor(tueScore * 1.5));
+            if (tueFrameCount % spawnRate === 0) spawnTueEnvelope();
+
+            // 背景繪製
+            const gradient = tueCtx.createLinearGradient(0, 0, 0, tueCanvas.height);
+            gradient.addColorStop(0, '#e8f5e9');
+            gradient.addColorStop(0.7, '#f1f8e9');
+            gradient.addColorStop(1, '#dcedc8');
+            tueCtx.fillStyle = gradient;
+            tueCtx.fillRect(0, 0, tueCanvas.width, tueCanvas.height);
+
+            // 背景 3D 網格
+            tueCtx.strokeStyle = 'rgba(16, 185, 129, 0.12)';
+            tueCtx.lineWidth = 1;
+            const centerX = tueCanvas.width / 2;
+            for(let i = -10; i <= 10; i++) {
+                tueCtx.beginPath();
+                tueCtx.moveTo(centerX + i * (tueCanvas.width / 10), tueCanvas.height);
+                tueCtx.lineTo(centerX + i * (tueCanvas.width / 40), 0);
+                tueCtx.stroke();
+            }
+
+            // 更新信封 (嚴格邊界檢查：左右與頂部)
+            for (let i = tueEnvelopes.length - 1; i >= 0; i--) {
+                const env = tueEnvelopes[i];
+                env.vy += 0.28; // 重力
+                env.x += env.vx;
+                env.y += env.vy;
+                env.rot += env.rotV;
+
+                // 考慮 3D 深度與縮放後的動態碰撞體積
+                const depthScale = 0.8 + (env.y / tueCanvas.height) * 0.4;
+                const halfW = 42 * depthScale;
+                const halfH = 28 * depthScale;
+
+                // 1. 左右邊界反彈
+                if (env.x - halfW < 0) {
+                    env.x = halfW;
+                    env.vx = Math.abs(env.vx) * 0.8;
+                } else if (env.x + halfW > tueCanvas.width) {
+                    env.x = tueCanvas.width - halfW;
+                    env.vx = -Math.abs(env.vx) * 0.8;
+                }
+
+                // 2. 頂部邊界反彈 (防止飛出畫面外)
+                if (env.y - halfH < 0) {
+                    env.y = halfH;
+                    env.vy = Math.abs(env.vy) * 0.7; // 向下彈回，動能稍微損耗
+                }
+
+                tueCtx.save();
+                tueCtx.translate(env.x, env.y);
+                tueCtx.rotate(env.rot);
+                tueCtx.scale(depthScale, depthScale);
+                
+                // 渲染郵件
+                tueCtx.fillStyle = 'rgba(0,0,0,0.06)';
+                tueCtx.fillRect(-35, -20, 80, 50); 
+                tueCtx.fillStyle = '#ffffff';
+                tueCtx.fillRect(-40, -25, 80, 50); 
+                tueCtx.strokeStyle = env.color;
+                tueCtx.lineWidth = 3;
+                tueCtx.strokeRect(-40, -25, 80, 50);
+                tueCtx.fillStyle = env.color;
+                tueCtx.font = 'bold 13px Inter';
+                tueCtx.textAlign = 'center';
+                tueCtx.fillText(env.type, 0, 5);
+                tueCtx.restore();
+
+                // 移除漏掉的郵件 (從底部落下)
+                if (env.y > tueCanvas.height + 100 && env.vy > 0) {
+                    tueEnvelopes.splice(i, 1);
+                    tueLives--;
+                    if (tueLives <= 0) {
+                        tueState = 'gameover';
+                        if(tueScore > tueHighScore) {
+                            tueHighScore = tueScore;
+                            localStorage.setItem('gapSense_tueHighScore', tueHighScore);
+                        }
+                        showModal("郵件溢位", `成功切除 ${tueScore} 封重要郵件。`, "重啟信箱", () => {
+                            tueState = 'setup'; render();
+                        });
+                        return;
+                    }
+                }
+            }
+
+            // 繪製粒子與切痕
+            for (let i = tueParticles.length - 1; i >= 0; i--) {
+                const p = tueParticles[i];
+                p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= 0.025;
+                tueCtx.globalAlpha = Math.max(0, p.life);
+                tueCtx.fillStyle = p.color;
+                tueCtx.fillRect(p.x, p.y, p.size, p.size);
+                if (p.life <= 0) tueParticles.splice(i, 1);
+            }
+            tueCtx.globalAlpha = 1;
+
+            if (tueTrail.length > 1) {
+                tueCtx.beginPath();
+                tueCtx.strokeStyle = '#10B981';
+                tueCtx.lineWidth = 4;
+                tueCtx.lineCap = 'round';
+                tueCtx.moveTo(tueTrail[0].x, tueTrail[0].y);
+                for (let i = 1; i < tueTrail.length; i++) {
+                    tueCtx.lineTo(tueTrail[i].x, tueTrail[i].y);
+                }
+                tueCtx.stroke();
+            }
+
+            document.getElementById('stat-value').innerText = tueScore;
+            tueCtx.fillStyle = '#064e3b';
+            tueCtx.font = 'bold 11px Inter';
+            tueCtx.textAlign = 'left';
+            tueCtx.fillText(`HP: ${'❤️'.repeat(tueLives)}`, 20, 30);
+
+            tueAnimId = requestAnimationFrame(tueLoop);
+        }
+
+        function spawnTueEnvelope() {
+            const types = ['ASAP', 'Meeting', 'FYI'];
+            const colors = ['#EF4444', '#F59E0B', '#3B82F6'];
+            const randIdx = Math.floor(Math.random() * types.length);
+            
+            const safeMargin = 80;
+            tueEnvelopes.push({
+                x: safeMargin + Math.random() * (tueCanvas.width - safeMargin * 2),
+                y: tueCanvas.height + 40,
+                vx: (Math.random() - 0.5) * 5.5,
+                vy: -(13.5 + Math.random() * 4.5), // 下修最高彈跳速度，避免頻繁撞頂
+                rot: (Math.random() - 0.5) * 2,
+                rotV: (Math.random() - 0.5) * 0.12,
+                type: types[randIdx],
+                color: colors[randIdx]
+            });
+        }
+
+        function checkTueSlice() {
+            if (tueTrail.length < 2) return;
+            const last = tueTrail[tueTrail.length - 1];
+            for (let i = tueEnvelopes.length - 1; i >= 0; i--) {
+                const env = tueEnvelopes[i];
+                if (Math.hypot(last.x - env.x, last.y - env.y) < 50) {
+                    if (navigator.vibrate) navigator.vibrate(20);
+                    for (let j = 0; j < 10; j++) {
+                        tueParticles.push({
+                            x: env.x, y: env.y,
+                            vx: (Math.random() - 0.5) * 10,
+                            vy: (Math.random() - 0.5) * 10,
+                            size: Math.random() * 4 + 2,
+                            color: env.color,
+                            life: 1
+                        });
+                    }
+                    tueEnvelopes.splice(i, 1);
+                    tueScore++;
+                }
+            }
+        }
+
+        // --- 星期三：咖啡接滴 ---
+        function renderWednesday(scene) {
+            scene.innerHTML = `
+                <div class="w-full h-full flex flex-col items-center justify-between py-2 px-4 relative z-10">
+                    <div class="text-center glass-card p-4 w-full max-w-xs mb-2">
+                        <h2 class="font-black text-xs uppercase text-emerald-800 tracking-widest mb-2">Drip Drop 能量補給</h2>
+                        <p class="text-xs text-emerald-700 font-bold leading-relaxed">
+                            按住下方按鈕後 <span class="bg-white px-1 rounded shadow-sm text-emerald-900">閉上眼睛放鬆</span><br>
+                            默數 <span class="text-lg font-black text-emerald-600">5</span> 秒，然後鬆開。
+                        </p>
+                    </div>
+                    <div class="relative flex items-center justify-center flex-1 w-full my-6">
+                        <div class="relative">
+                            <div class="absolute -right-6 top-5 w-10 h-16 border-[5px] border-emerald-900 rounded-xl z-0"></div>
+                            <div class="relative w-28 h-36 border-[5px] border-emerald-900 rounded-b-3xl bg-white overflow-hidden shadow-lg z-10 flex flex-col justify-end">
+                                <div id="wed-liquid" class="w-full bg-[#6F4E37] transition-all duration-[50ms] ease-linear" style="height: 0%;">
+                                    <div class="w-full h-1.5 bg-[#8B6B52] opacity-80"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="wed-btn" class="w-full max-w-xs bg-emerald-600 text-white py-6 rounded-2xl font-black text-lg active:scale-95 transition-all uppercase tracking-widest shadow-xl touch-none select-none">
+                        長按注水
+                    </button>
+                </div>
+            `;
+            const btn = document.getElementById('wed-btn');
+            btn.onpointerdown = (e) => {
+                e.preventDefault(); btn.setPointerCapture(e.pointerId);
+                wedIsPressing = true; wedStartTime = performance.now(); wedLastVibeTime = 0;
+                btn.classList.replace('bg-emerald-600', 'bg-emerald-800'); btn.innerText = '正在注水...';
+                if (wedAnimId) cancelAnimationFrame(wedAnimId);
+                wedLoop();
+            };
+            btn.onpointerup = () => { if (wedIsPressing) finishWedGame(); };
+            btn.onpointercancel = () => { if (wedIsPressing) finishWedGame(); };
+        }
+        function wedLoop() {
+            if (!wedIsPressing || currentDay !== 3) return;
+            const now = performance.now(); const elapsed = now - wedStartTime;
+            const fillLevel = Math.min(100, (elapsed / 5000) * 100);
+            const liquid = document.getElementById('wed-liquid');
+            if (liquid) liquid.style.height = `${fillLevel}%`;
+            const progress = Math.min(1, elapsed / 5000);
+            const interval = Math.max(40, 800 - Math.pow(progress, 2.5) * 760);
+            if (now - wedLastVibeTime > interval) { if (navigator.vibrate) navigator.vibrate(25); wedLastVibeTime = now; }
+            wedAnimId = requestAnimationFrame(wedLoop);
+        }
+        function finishWedGame() {
+            wedIsPressing = false; const btn = document.getElementById('wed-btn');
+            if (btn) { btn.classList.replace('bg-emerald-800', 'bg-emerald-600'); btn.innerText = '長按注水'; }
+            cancelAnimationFrame(wedAnimId);
+            const elapsed = performance.now() - wedStartTime; const seconds = (elapsed / 1000).toFixed(2);
+            const diff = Math.abs(5 - elapsed / 1000);
+            if (diff <= 0.25) {
+                wedPerfectBrews++; localStorage.setItem('gapSense_wedScore', wedPerfectBrews);
+                showModal("完美萃取！☕", `精準的 ${seconds} 秒！`, "再來一杯", () => render());
+            } else {
+                showModal(elapsed < 5000 ? "太心急啦！" : "滿出來啦！", `時間到了 ${seconds} 秒。`, "再來一次", () => render());
+            }
+        }
+
+        // --- 星期四：感官覺察 ---
+        function renderThursday(scene) {
+            const steps = [
+                { t: "Look Outside", d: "尋找視野中 3 個綠色的物體。", e: "🌿" },
+                { t: "Listen Close", d: "辨識一個來自遠處的微弱聲音。", e: "👂" },
+                { t: "Deep Breath", d: "吸氣 4 秒、憋氣 4 秒、吐氣 8 秒。", e: "💨" }
+            ];
+            const s = steps[thuStep];
+            scene.innerHTML = `
+                <div class="glass-card p-8 flex flex-col items-center text-center gap-6 w-72">
+                    <div class="text-4xl">${s.e}</div>
+                    <h2 class="font-black tracking-widest text-sm text-emerald-800 uppercase">${s.t}</h2>
+                    <p class="text-xs text-gray-500">${s.d}</p>
+                    <button onclick="nextThuStep()" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-bold text-xs uppercase">Done</button>
+                </div>
+            `;
+        }
+        function nextThuStep() {
+            if (thuStep < 2) { thuStep++; render(); }
+            else { thuStep = 0; showModal("平靜達成", "感官已重新校準。", "完成", () => render()); }
+        }
+
+        // --- 星期五：TGIF Pop ---
+        function renderFriday(scene) {
+            scene.innerHTML = `
+                <div class="absolute top-4 right-4 z-40">
+                    <label for="fri-upload" class="cursor-pointer opacity-50 hover:opacity-100">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                    </label>
+                    <input type="file" id="fri-upload" class="hidden" accept="image/*">
+                </div>
+                <div id="logo-container" style="transform: scale(1);">
+                    <div id="ai-bubble" class="ai-bubble">Thinking...</div>
+                    <svg id="main-svg" width="200" height="110" viewBox="0 0 240 130" fill="none">
+                        <defs>
+                            <pattern id="stripe-pattern" x="0" y="0" width="1" height="12" patternUnits="userSpaceOnUse"><rect width="240" height="6" fill="#064E3B" /></pattern>
+                            <pattern id="fri-pattern" x="0" y="0" width="1" height="1" patternContentUnits="objectBoundingBox"><image id="fri-image-el" href="${friCustomImg || ''}" width="1" height="1" preserveAspectRatio="xMidYMid slice" /></pattern>
+                            <mask id="gap-mask"><rect width="240" height="130" fill="white" /><circle cx="152" cy="65" r="58" fill="black" /></mask>
+                        </defs>
+                        <g>
+                            <circle cx="95" cy="65" r="38" fill="${friCustomImg ? 'url(#fri-pattern)' : 'url(#stripe-pattern)'}" mask="url(#gap-mask)" />
+                            <circle cx="145" cy="65" r="46" fill="${friCustomImg ? 'url(#fri-pattern)' : 'url(#stripe-pattern)'}" />
+                        </g>
+                    </svg>
+                    <div class="mt-4 text-[#064E3B] font-black tracking-[0.4em] text-xl">GapSense</div>
+                </div>
+            `;
+            const container = document.getElementById('logo-container');
+            container.onpointerdown = (e) => {
+                e.preventDefault();
+                if (friIsExploded) return;
+                if (navigator.vibrate) navigator.vibrate(15);
+                friLastPopTime = Date.now();
+                friPopProgress = Math.min(100, friPopProgress + 8);
+                const currentScale = 1 + (friPopProgress / 100) * 1.5;
+                container.style.setProperty('--bump-scale', currentScale * 1.15); 
+                container.classList.add('bumping');
+                setTimeout(() => { container.classList.remove('bumping'); updateFriUI(); }, 50);
+                if (friPopProgress >= 100) explodeFri();
+            };
+            document.getElementById('fri-upload').onchange = (e) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => { friCustomImg = ev.target.result; render(); };
+                reader.readAsDataURL(e.target.files[0]);
+            };
+            document.getElementById('ai-trigger').onclick = async () => {
+                const bubble = document.getElementById('ai-bubble');
+                bubble.innerText = "正在感應壓力..."; bubble.style.display = "block";
+                const res = await callGemini(`User is popping stress. Progress: ${friPopProgress}%. Give a 1-sentence witty zen comment in Traditional Chinese.`, "Zen Master with humor.");
+                bubble.innerText = res; setTimeout(() => bubble.style.display = "none", 3000);
+            };
+        }
+
+        function updateFriUI() {
+            const container = document.getElementById('logo-container');
+            if (!container || friIsExploded || container.classList.contains('bumping')) return;
+            const scale = 1 + (friPopProgress / 100) * 1.5;
+            container.style.transform = `scale(${scale})`;
+            const statValue = document.getElementById('stat-value');
+            if (statValue) statValue.innerText = Math.floor(friPopProgress) + "%";
+        }
+
+        setInterval(() => {
+            if (currentDay === 5 && !friIsExploded && friPopProgress > 0) {
+                if (Date.now() - friLastPopTime > 500) {
+                    friPopProgress = Math.max(0, friPopProgress - 0.5);
+                    updateFriUI();
+                }
+            }
+        }, 50);
+
+        async function explodeFri() {
+            friIsExploded = true; createConfetti(50);
+            const container = document.getElementById('logo-container');
+            container.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+            container.style.transform = 'scale(5)'; container.style.opacity = '0';
+            const quote = await callGemini("User exploded their stress. Give a satisfying 1-sentence closing quote in Traditional Chinese.", "Traditional Chinese only.");
+            setTimeout(() => {
+                showModal("TGIF！釋放成功！", quote, "再玩一次", () => { friPopProgress = 0; friIsExploded = false; render(); });
+            }, 600);
+        }
+
+        // --- 共用功能 ---
+        function showModal(title, content, btnText, callback) {
+            const modal = document.getElementById('game-modal');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-content').innerText = content;
+            const btn = document.getElementById('modal-btn');
+            btn.innerText = btnText; btn.onclick = () => { modal.style.display = 'none'; callback(); };
+            modal.style.display = 'flex';
+        }
+
+        function createConfetti(count) {
+            for (let i = 0; i < count; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.backgroundColor = ['#10B981', '#FCD34D', '#064E3B'][Math.floor(Math.random()*3)];
+                c.style.left = '50%'; c.style.top = '50%';
+                document.getElementById('game-scene').appendChild(c);
+                const angle = Math.random() * Math.PI * 2, v = Math.random() * 8 + 4;
+                let x=0, y=0, op=1;
+                const anim = () => {
+                    x += Math.cos(angle)*v; y += Math.sin(angle)*v; op -= 0.02;
+                    c.style.transform = `translate(${x}px, ${y}px)`; c.style.opacity = op;
+                    if(op > 0) requestAnimationFrame(anim); else c.remove();
+                };
+                requestAnimationFrame(anim);
+            }
+        }
+        window.onload = () => switchDay(1);
+    </script>
+</body>
+</html>
