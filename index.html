@@ -48,25 +48,22 @@
             background: var(--mint-bg);
         }
 
-        /* --- 動態示範動畫優化 --- */
+        /* --- 動態示範動畫 --- */
         
-        /* 星期一: 整合式動畫，筆插上後直接跟隨旋轉容器 */
+        /* 星期一: 精準碰撞與跟隨旋轉 */
         @keyframes demoMonRotation { 
             from { transform: rotate(0deg); } 
             to { transform: rotate(360deg); } 
         }
-        
-        /* 底部射出的筆：只負責向上移動然後消失 */
-        @keyframes demoMonShootingPen {
-            0% { transform: translate(-50%, 40px); opacity: 1; }
-            30% { transform: translate(-50%, -60px); opacity: 1; }
-            31%, 100% { transform: translate(-50%, -60px); opacity: 0; }
+        @keyframes demoMonShooting {
+            0%, 15% { margin-top: 40px; opacity: 1; }
+            25% { margin-top: 0px; opacity: 1; } /* 0.5s時剛好碰到邊緣 */
+            25.1%, 100% { margin-top: 0px; opacity: 0; }
         }
-
-        /* 在圓圈上的筆：在特定時間點出現，並隨著圓圈父級旋轉 */
-        @keyframes demoMonStuckPenAppear {
-            0%, 29% { opacity: 0; }
-            30%, 100% { opacity: 1; }
+        @keyframes demoMonStuckAppear {
+            0%, 24.9% { opacity: 0; transform: rotate(0deg); }
+            25%, 90% { opacity: 1; transform: rotate(-90deg); } /* 父容器旋轉了90度，相對旋轉-90度即固定在底部 */
+            90.1%, 100% { opacity: 0; transform: rotate(-90deg); }
         }
 
         /* 星期二: 薄荷綠流動發光軌跡 */
@@ -117,12 +114,14 @@
             100% { transform: scale(1.5); opacity: 0; }
         }
 
-        /* 遊戲組件樣式 */
+        /* 遊戲組件樣式 (已優化筆的結構與旋轉中心) */
         .target-circle { width: 160px; height: 160px; border-radius: 50%; background: #e5e7eb; border: 6px solid #9ca3af; position: relative; z-index: 10; }
-        .pen-stuck { position: absolute; width: 8px; height: 65px; bottom: 50%; left: 50%; transform-origin: bottom center; z-index: 20; }
-        .pen-body { width: 6px; height: 50px; background: #10B981; margin: 0 auto; border-radius: 2px; }
-        .pen-tip { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 12px solid #374151; margin: 0 auto; }
-        .shooter-pen { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 30; }
+        
+        .pen-stuck { position: absolute; width: 8px; top: 100%; left: 50%; margin-left: -4px; transform-origin: 50% -80px; z-index: 20; }
+        .shooter-pen { position: absolute; width: 8px; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 100px; z-index: 30; }
+        
+        .pen-body { width: 6px; height: 45px; background: #10B981; margin: 0 auto; border-radius: 2px; }
+        .pen-tip { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 12px solid #374151; margin: 0 auto; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -183,7 +182,7 @@
         let tueAnimId = null, tueCanvas, tueCtx, tueState = 'setup', tueScore = 0, tueLives = 3, tueEnvelopes = [], tueParticles = [], tueTrail = [], tueIsSwiping = false, tueFrameCount = 0;
         let wedAnimId = null, wedState = 'setup', wedStartTime = 0, wedIsPressing = false, wedLastVibeTime = 0, wedPerfectBrews = parseInt(localStorage.getItem('gapSense_wedScore')) || 0;
         let thuState = 'setup', thuStep = 0;
-        let friState = 'setup', friPopProgress = 0, friIsExploded = false, friLastPopTime = Date.now();
+        let friState = 'setup', friPopProgress = 0, friIsExploded = false;
 
         async function callGemini(prompt, system = "You are a witty zen master.") {
             try {
@@ -260,29 +259,33 @@
             } else if (currentDay === 5) {
                 if (friState === 'playing') aiTrigger.style.display = 'block';
                 renderFriday(scene);
-                statLabel.innerText = "PROGRESS";
+                statLabel.innerText = "PRESSURE";
                 statValue.innerText = Math.floor(friPopProgress) + "%";
             } else {
                 scene.innerHTML = '<div class="glass-card p-10 font-bold text-center italic text-gray-400 text-xl">COMING SOON</div>';
             }
         }
 
-        // --- 星期一 ---
+        // --- 星期一 (精準停靠物理動畫) ---
         function renderMonday(scene) {
             if (monState === 'setup') {
                 scene.innerHTML = `
                     <div class="glass-card p-6 flex flex-col items-center gap-4 w-80 text-center">
-                        <div class="flex items-center justify-center h-28 w-full relative mb-1 overflow-hidden rounded-xl bg-white shadow-inner">
-                            <!-- 旋轉中的目標圓圈 -->
-                            <div class="w-14 h-14 rounded-full border-[4px] border-gray-200 relative z-10 bg-white" style="animation: demoMonRotation 2.5s linear infinite;">
-                                <!-- 插在圓圈上的筆：隨著父級旋轉，動畫控制何時顯示 -->
-                                <div class="absolute w-1.5 h-7 bg-emerald-500 top-[-18px] left-[50%] -translate-x-1/2 rounded-full" style="animation: demoMonStuckPenAppear 2.5s infinite linear;"></div>
+                        <div class="flex items-center justify-center h-32 w-full mb-1 bg-white rounded-xl shadow-inner overflow-hidden">
+                            <div class="relative w-[80px] h-[80px] mt-[-20px]">
+                                <div class="w-full h-full rounded-full border-[4px] border-gray-200 relative z-10 bg-white" style="animation: demoMonRotation 2s linear infinite;">
+                                    <div class="absolute w-1.5 top-[100%] left-[50%] ml-[-3px]" style="transform-origin: 50% -40px; animation: demoMonStuckAppear 2s infinite linear;">
+                                        <div class="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[8px] border-b-gray-700 mx-auto"></div>
+                                        <div class="w-1 h-5 bg-emerald-500 mx-auto rounded-sm"></div>
+                                    </div>
+                                </div>
+                                <div class="absolute w-1.5 top-[100%] left-[50%] ml-[-3px] z-20" style="animation: demoMonShooting 2s infinite linear;">
+                                    <div class="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[8px] border-b-gray-700 mx-auto"></div>
+                                    <div class="w-1 h-5 bg-emerald-600 mx-auto rounded-sm shadow-md"></div>
+                                </div>
                             </div>
-                            <!-- 底部射出的筆：只在前端顯示射出軌跡 -->
-                            <div class="w-1.5 h-7 bg-emerald-600 absolute left-[50%] z-20 shadow-md rounded-full" style="animation: demoMonShootingPen 2.5s infinite linear;"></div>
                         </div>
                         <h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Monday Pen Shot</h2>
-                        
                         <div class="w-full flex flex-col gap-3">
                             <div id="mon-upload" class="w-full h-32 rounded-xl border-2 border-dashed border-emerald-400 bg-white flex items-center justify-center overflow-hidden cursor-pointer shadow-md transition-all hover:border-emerald-600">
                                 ${monBossImg ? `<img src="${monBossImg}" class="max-w-full max-h-full object-contain">` : `
@@ -308,7 +311,22 @@
                     reader.readAsDataURL(e.target.files[0]);
                 };
             } else {
-                scene.innerHTML = `<div id="mon-play-area" class="w-full h-full relative flex items-center justify-center"><div id="mon-stats" class="absolute top-4 left-4 text-sm font-black uppercase text-emerald-900 bg-white/50 px-3 py-1 rounded-full">Lvl ${monLevel} | ❤️ <span id="mon-lives-display">${monLives}</span></div><div id="mon-target-wrap" class="relative"><div id="mon-target-circle" class="target-circle overflow-hidden">${monBossImg ? `<img src="${monBossImg}" class="w-full h-full object-cover">` : ''}</div><div id="mon-stuck-layer" class="absolute inset-0 pointer-events-none"></div></div><div id="mon-shooter" class="shooter-pen"><div class="pen-body"></div><div class="pen-tip"></div></div></div>`;
+                scene.innerHTML = `
+                    <div id="mon-play-area" class="w-full h-full relative flex items-center justify-center">
+                        <div id="mon-stats" class="absolute top-4 left-4 text-sm font-black uppercase text-emerald-900 bg-white/50 px-3 py-1 rounded-full shadow-sm">
+                            Lvl ${monLevel} | ❤️ <span id="mon-lives-display">${monLives}</span>
+                        </div>
+                        <div class="relative w-[160px] h-[160px]" id="mon-target-wrap">
+                            <div id="mon-target-circle" class="target-circle overflow-hidden shadow-lg border-4 border-gray-300 w-full h-full">
+                                ${monBossImg ? `<img src="${monBossImg}" class="w-full h-full object-cover">` : ''}
+                            </div>
+                            <div id="mon-stuck-layer" class="absolute inset-0 pointer-events-none"></div>
+                            <div id="mon-shooter" class="shooter-pen">
+                                <div class="pen-tip"></div><div class="pen-body"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 monAnimId = requestAnimationFrame(monLoop);
                 document.getElementById('mon-play-area').onpointerdown = (e) => { e.preventDefault(); shootMonPen(); };
             }
@@ -327,27 +345,61 @@
             if (monIsShooting || monState !== 'playing') return;
             monIsShooting = true;
             const shooter = document.getElementById('mon-shooter');
-            shooter.style.transition = 'transform 0.12s cubic-bezier(0.4, 0, 0.2, 1)';
-            shooter.style.transform = 'translateX(-50%) translateY(-220px)';
+            const targetWrap = document.getElementById('mon-target-wrap');
+            
+            // 物理優化：將 shooter-pen 的 margin-top 設為 0，使其筆尖剛好精準停在圓圈邊緣
+            shooter.style.transition = 'margin-top 0.12s cubic-bezier(0.2, 0.8, 0.4, 1)';
+            shooter.style.marginTop = '0px';
+
             setTimeout(() => {
-                const hitAngle = (180 - (monRotation % 360) + 360) % 360;
-                const isCollision = monStuckAngles.some(a => { let d = Math.abs(a - hitAngle); return (d > 180 ? 360 - d : d) < 12; });
+                const hitAngle = (360 - (monRotation % 360)) % 360;
+                const isCollision = monStuckAngles.some(a => { let d = Math.abs(a - hitAngle); return (d > 180 ? 360 - d : d) < 14; });
+                
                 if (isCollision) {
+                    // 碰撞反彈
+                    shooter.style.transition = 'transform 0.4s ease-in, margin-top 0.4s ease-in';
+                    shooter.style.transform = 'translateX(-50%) rotate(45deg)';
+                    shooter.style.marginTop = '200px';
+                    
                     monLives--; document.getElementById('mon-lives-display').innerText = monLives;
-                    if (monLives <= 0) showModal("任務失敗", "壓力反彈！再來一次？", "重試", () => { monLevel = 1; monState = 'setup'; render(); });
+                    setTimeout(() => {
+                        if (monLives <= 0) showModal("任務失敗", "壓力反彈！再來一次？", "重試", () => { monLevel = 1; monState = 'setup'; render(); });
+                        else { 
+                            shooter.style.transition = 'none'; 
+                            shooter.style.transform = 'translateX(-50%) rotate(0deg)'; 
+                            shooter.style.marginTop = '100px'; 
+                            monIsShooting = false; 
+                        }
+                    }, 400);
                 } else {
+                    // 成功插入，附加至旋轉層中並跟隨旋轉
                     monStuckAngles.push(hitAngle);
                     const layer = document.getElementById('mon-stuck-layer');
                     if (layer) {
-                        const pen = document.createElement('div'); pen.className = 'pen-stuck';
-                        pen.style.transform = `translateX(-50%) rotate(${hitAngle}deg) translateY(-80px)`;
-                        pen.innerHTML = `<div class="pen-body"></div><div class="pen-tip"></div>`;
+                        const pen = document.createElement('div'); 
+                        pen.className = 'pen-stuck';
+                        pen.style.transform = `rotate(${hitAngle}deg)`;
+                        pen.innerHTML = `<div class="pen-tip"></div><div class="pen-body"></div>`;
                         layer.appendChild(pen);
+                        
+                        targetWrap.style.transform = 'scale(0.95)';
+                        setTimeout(() => targetWrap.style.transform = 'scale(1)', 50);
                     }
+                    
+                    if (navigator.vibrate) navigator.vibrate([20]);
                     monPensLeft--; document.getElementById('stat-value').innerText = monPensLeft;
-                    if (monPensLeft <= 0) showModal("解壓成功", `等級 ${monLevel} 已清除！`, "下一關", () => { monLevel++; startMonGame(); });
+                    
+                    shooter.style.transition = 'none'; 
+                    shooter.style.marginTop = '100px'; 
+                    monIsShooting = false;
+
+                    if (monPensLeft <= 0) {
+                        monState = 'complete';
+                        setTimeout(() => {
+                            showModal("解壓成功", `等級 ${monLevel} 已清除！`, "下一關", () => { monLevel++; startMonGame(); });
+                        }, 100);
+                    }
                 }
-                shooter.style.transition = 'none'; shooter.style.transform = 'translateX(-50%)'; monIsShooting = false;
             }, 120);
         }
 
@@ -371,55 +423,67 @@
                 tueCanvas = document.getElementById('tue-canvas'); tueCtx = tueCanvas.getContext('2d');
                 tueCanvas.width = scene.clientWidth; tueCanvas.height = scene.clientHeight;
                 tueCanvas.onpointerdown = (e) => { tueIsSwiping = true; const rect = tueCanvas.getBoundingClientRect(); tueTrail = [{ x: e.clientX - rect.left, y: e.clientY - rect.top }]; };
-                tueCanvas.onpointermove = (e) => { if (tueIsSwiping) { const rect = tueCanvas.getBoundingClientRect(); tueTrail.push({ x: e.clientX - rect.left, y: e.clientY - rect.top }); if (tueTrail.length > 10) tueTrail.shift(); checkTueSlice(); } };
-                tueCanvas.onpointerup = () => { tueIsSwiping = false; };
+                tueCanvas.onpointermove = (e) => { if (tueIsSwiping) { const rect = tueCanvas.getBoundingClientRect(); const x = e.clientX - rect.left, y = e.clientY - rect.top; tueTrail.push({ x, y }); if (tueTrail.length > 8) tueTrail.shift(); checkTueSlice(); } };
+                tueCanvas.onpointerup = () => { tueIsSwiping = false; tueTrail = []; };
                 tueLoop();
             }
         }
         function startTueGame() { startCountdown(() => { tueState = 'playing'; tueScore = 0; tueLives = 3; tueEnvelopes = []; tueParticles = []; render(); }); }
         function tueLoop() {
             if (currentDay !== 2 || tueState !== 'playing') return;
-            tueFrameCount++; if (tueFrameCount % 40 === 0) spawnTueEnvelope();
+            tueFrameCount++; if (tueFrameCount % 50 === 0) spawnTueEnvelope(); 
             tueCtx.fillStyle = '#DCFCE7'; tueCtx.fillRect(0, 0, tueCanvas.width, tueCanvas.height);
-            for (let i = tueEnvelopes.length - 1; i >= 0; i--) {
-                const env = tueEnvelopes[i]; env.y += env.vy; env.vy += 0.22; env.x += env.vx;
-                tueCtx.save(); tueCtx.translate(env.x, env.y); tueCtx.rotate(env.rot);
-                tueCtx.fillStyle = 'white'; tueCtx.fillRect(-40, -25, 80, 50);
-                tueCtx.strokeStyle = env.color; tueCtx.lineWidth = 3; tueCtx.strokeRect(-40, -25, 80, 50);
-                tueCtx.fillStyle = env.color; tueCtx.font = 'bold 16px Inter'; tueCtx.textAlign = 'center'; tueCtx.fillText(env.type, 0, 5);
-                tueCtx.restore();
-                if (env.y > tueCanvas.height + 50) { tueEnvelopes.splice(i, 1); tueLives--; if (tueLives <= 0) showModal("收件匣溢出", "處理速度跟不上郵件！", "重試", () => { tueState = 'setup'; render(); }); }
+            for (let i = tueParticles.length - 1; i >= 0; i--) {
+                const p = tueParticles[i]; p.x += p.vx; p.y += p.vy; p.alpha -= 0.02;
+                if (p.alpha <= 0) tueParticles.splice(i, 1);
+                else { tueCtx.globalAlpha = p.alpha; tueCtx.fillStyle = p.c; tueCtx.fillRect(p.x, p.y, 4, 4); }
             }
-            if (tueTrail.length > 1) { tueCtx.beginPath(); tueCtx.strokeStyle = '#10B981'; tueCtx.lineWidth = 8; tueCtx.lineCap = 'round'; tueCtx.moveTo(tueTrail[0].x, tueTrail[0].y); for (let i = 1; i < tueTrail.length; i++) tueCtx.lineTo(tueTrail[i].x, tueTrail[i].y); tueCtx.stroke(); }
+            tueCtx.globalAlpha = 1;
+            for (let i = tueEnvelopes.length - 1; i >= 0; i--) {
+                const env = tueEnvelopes[i]; 
+                env.y += env.vy; env.vy += 0.15; env.x += env.vx; env.rot += 0.02;
+                tueCtx.save(); tueCtx.translate(env.x, env.y); tueCtx.rotate(env.rot);
+                tueCtx.fillStyle = 'white'; tueCtx.shadowBlur = 10; tueCtx.shadowColor = 'rgba(0,0,0,0.1)';
+                tueCtx.fillRect(-40, -25, 80, 50);
+                tueCtx.strokeStyle = env.color; tueCtx.lineWidth = 2; tueCtx.strokeRect(-40, -25, 80, 50);
+                tueCtx.fillStyle = env.color; tueCtx.font = 'bold 14px Inter'; tueCtx.textAlign = 'center'; tueCtx.fillText(env.type, 0, 5);
+                tueCtx.restore();
+                if (env.y > tueCanvas.height + 60) { tueEnvelopes.splice(i, 1); tueLives--; if (tueLives <= 0) showModal("收件匣溢出", "沒關係，明天再回。", "重試", () => { tueState = 'setup'; render(); }); }
+            }
+            if (tueTrail.length > 1) {
+                tueCtx.beginPath(); tueCtx.strokeStyle = 'rgba(16, 185, 129, 0.6)'; tueCtx.lineWidth = 10; tueCtx.lineCap = 'round';
+                tueCtx.moveTo(tueTrail[0].x, tueTrail[0].y);
+                for (let i = 1; i < tueTrail.length; i++) tueCtx.lineTo(tueTrail[i].x, tueTrail[i].y);
+                tueCtx.stroke();
+            }
             document.getElementById('stat-value').innerText = tueScore;
             tueAnimId = requestAnimationFrame(tueLoop);
         }
-        function spawnTueEnvelope() { tueEnvelopes.push({ x: 50 + Math.random() * (tueCanvas.width - 100), y: tueCanvas.height + 20, vx: (Math.random() - 0.5) * 5, vy: -13 - Math.random() * 5, rot: Math.random() * 2, type: 'ASAP', color: '#EF4444' }); }
+        function spawnTueEnvelope() { 
+            const types = ['ASAP', 'URGENT', 'FYI', 'MEETING'];
+            tueEnvelopes.push({ 
+                x: 50 + Math.random() * (tueCanvas.width - 100), y: tueCanvas.height + 20, 
+                vx: (Math.random() - 0.5) * 3, vy: -10 - Math.random() * 4, 
+                rot: Math.random() * Math.PI, type: types[Math.floor(Math.random()*types.length)], color: '#EF4444' 
+            }); 
+        }
         function checkTueSlice() {
             if (tueTrail.length < 2) return;
             const last = tueTrail[tueTrail.length - 1];
             for (let i = tueEnvelopes.length - 1; i >= 0; i--) {
                 const env = tueEnvelopes[i];
-                if (Math.hypot(last.x - env.x, last.y - env.y) < 55) { if (navigator.vibrate) navigator.vibrate(20); tueEnvelopes.splice(i, 1); tueScore++; }
+                if (Math.hypot(last.x - env.x, last.y - env.y) < 50) {
+                    for(let j=0; j<8; j++) tueParticles.push({x:env.x, y:env.y, vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10, alpha:1, c:env.color});
+                    if (navigator.vibrate) navigator.vibrate(15);
+                    tueEnvelopes.splice(i, 1); tueScore++;
+                }
             }
         }
 
         // --- 星期三 ---
         function renderWednesday(scene) {
             if (wedState === 'setup') {
-                scene.innerHTML = `
-                    <div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center">
-                        <div class="flex items-center justify-center h-32 w-full gap-5 mb-2 bg-white rounded-xl shadow-inner relative">
-                            <div class="w-12 h-16 border-[4px] border-emerald-900 rounded-b-xl flex flex-col justify-end overflow-hidden">
-                                <div class="w-full bg-[#6F4E37]" style="animation: demoWedFill 4s infinite linear;"></div>
-                            </div>
-                            <div class="text-emerald-600 font-black text-3xl demo-timer w-24"></div>
-                        </div>
-                        <h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Wednesday Drip Drop</h2>
-                        <p class="text-sm text-gray-600 font-bold leading-relaxed">長按注水，挑戰剛好 5 秒的平靜時刻！</p>
-                        <button onclick="startWedGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始挑戰</button>
-                    </div>
-                `;
+                scene.innerHTML = `<div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center"><div class="flex items-center justify-center h-32 w-full gap-5 mb-2 bg-white rounded-xl shadow-inner relative"><div class="w-12 h-16 border-[4px] border-emerald-900 rounded-b-xl flex flex-col justify-end overflow-hidden"><div class="w-full bg-[#6F4E37]" style="animation: demoWedFill 4s infinite linear;"></div></div><div class="text-emerald-600 font-black text-3xl demo-timer w-24"></div></div><h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Wednesday Drip Drop</h2><p class="text-sm text-gray-600 font-bold leading-relaxed">長按注水，挑戰剛好 5 秒的平靜時刻！</p><button onclick="startWedGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始挑戰</button></div>`;
             } else {
                 scene.innerHTML = `<div class="w-full h-full flex flex-col items-center justify-between py-6 px-4"><div class="text-center"><p class="text-xl text-emerald-800 font-black animate-pulse">心如止水，專注當下</p></div><div class="relative w-32 h-40 border-[6px] border-emerald-900 rounded-b-3xl bg-white overflow-hidden shadow-lg flex flex-col justify-end"><div id="wed-liquid" class="w-full bg-[#6F4E37]" style="height: 0%;"></div></div><button id="wed-btn" class="w-full max-w-xs bg-emerald-600 text-white py-8 rounded-2xl font-black text-2xl shadow-xl touch-none">長按注水 (5秒)</button></div>`;
                 const btn = document.getElementById('wed-btn');
@@ -470,13 +534,34 @@
                     </div>
                 `;
             } else {
-                scene.innerHTML = `<div id="logo-container" class="cursor-pointer transition-transform duration-75" style="transform: scale(1);"><svg width="220" height="220" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#10B981" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))" /></svg><div class="mt-4 text-center font-black text-2xl tracking-widest text-emerald-950">GapSense</div></div>`;
-                const container = document.getElementById('logo-container');
-                container.onpointerdown = (e) => {
+                scene.innerHTML = `
+                    <div class="flex flex-col items-center gap-10">
+                        <div id="pump-target" class="cursor-pointer transition-all duration-100 transform active:scale-90" style="transform: scale(1.0);">
+                            <svg width="200" height="200" viewBox="0 0 100 100">
+                                <defs>
+                                    <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                        <stop offset="0%" style="stop-color:#34D399;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#10B981;stop-opacity:1" />
+                                    </radialGradient>
+                                </defs>
+                                <circle cx="50" cy="50" r="40" fill="url(#grad1)" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.15))" />
+                                <path d="M35 50 L65 50 M50 35 L50 65" stroke="white" stroke-width="4" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <div class="w-64 h-3 bg-emerald-100 rounded-full overflow-hidden shadow-inner">
+                            <div id="fri-progress-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <p class="font-black text-emerald-900 tracking-tighter text-xl uppercase italic">Keep Pumping!</p>
+                    </div>
+                `;
+                const target = document.getElementById('pump-target');
+                target.onpointerdown = (e) => {
                     e.preventDefault(); if (friIsExploded) return;
-                    friPopProgress = Math.min(100, friPopProgress + 10);
-                    container.style.transform = `scale(${1 + (friPopProgress / 100) * 2.5})`;
-                    if (navigator.vibrate) navigator.vibrate(35);
+                    friPopProgress = Math.min(100, friPopProgress + 5);
+                    const scale = 1 + (friPopProgress / 100) * 2.2;
+                    target.style.transform = `scale(${scale})`;
+                    document.getElementById('fri-progress-bar').style.width = `${friPopProgress}%`;
+                    if (navigator.vibrate) navigator.vibrate(25);
                     if (friPopProgress >= 100) explodeFri();
                     updateFriUI();
                 };
@@ -485,10 +570,10 @@
         function startFriGame() { startCountdown(() => { friState = 'playing'; friPopProgress = 0; friIsExploded = false; render(); }); }
         function updateFriUI() { document.getElementById('stat-value').innerText = Math.floor(friPopProgress) + "%"; }
         async function explodeFri() {
-            friIsExploded = true; const container = document.getElementById('logo-container');
-            container.style.transform = 'scale(12)'; container.style.opacity = '0'; container.style.transition = 'all 0.25s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
+            friIsExploded = true; const target = document.getElementById('pump-target');
+            target.style.transform = 'scale(15)'; target.style.opacity = '0'; target.style.transition = 'all 0.3s ease-out';
             const quote = await callGemini("User exploded stress on a Friday. One witty, satisfying zen quote about freedom and weekend.");
-            setTimeout(() => { showModal("壓力全消！💥", quote, "迎接週末", () => { friState = 'setup'; render(); }); }, 300);
+            setTimeout(() => { showModal("壓力瓦解！🎉", quote, "迎接週末", () => { friState = 'setup'; render(); }); }, 400);
         }
 
         function showModal(title, content, btnText, callback) {
