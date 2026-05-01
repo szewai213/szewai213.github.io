@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GapSense</title>
+    <title>GapSense - 全方位壓力消除</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
@@ -48,168 +48,177 @@
             background: var(--mint-bg);
         }
 
-        /* --- 動態示範動畫 --- */
-        
-        /* 星期一: 精準碰撞與跟隨旋轉 */
-        @keyframes demoMonRotation { 
-            from { transform: rotate(0deg); } 
-            to { transform: rotate(360deg); } 
-        }
-        @keyframes demoMonShooting {
-            0%, 15% { margin-top: 40px; opacity: 1; }
-            25% { margin-top: 0px; opacity: 1; } /* 0.5s時剛好碰到邊緣 */
-            25.1%, 100% { margin-top: 0px; opacity: 0; }
-        }
-        @keyframes demoMonStuckAppear {
-            0%, 24.9% { opacity: 0; transform: rotate(0deg); }
-            25%, 90% { opacity: 1; transform: rotate(-90deg); } /* 父容器旋轉了90度，相對旋轉-90度即固定在底部 */
-            90.1%, 100% { opacity: 0; transform: rotate(-90deg); }
-        }
+        /* --- 動態動畫 --- */
+        @keyframes demoMonRotation { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes demoMonShooting { 0%, 15% { margin-top: 40px; opacity: 1; } 25% { margin-top: 0px; opacity: 1; } 25.1%, 100% { margin-top: 0px; opacity: 0; } }
+        @keyframes demoMonStuckAppear { 0%, 24.9% { opacity: 0; transform: rotate(0deg); } 25%, 90% { opacity: 1; transform: rotate(-90deg); } 90.1%, 100% { opacity: 0; transform: rotate(-90deg); } }
+        @keyframes demoTueLaser { 0% { width: 0; left: -10%; top: 50%; opacity: 0; } 10% { width: 0; left: -10%; top: 50%; opacity: 1; } 45% { width: 120%; left: 110%; top: 20%; opacity: 1; box-shadow: 0 0 20px #10B981, 0 0 10px white; } 55%, 100% { width: 120%; left: 110%; top: 20%; opacity: 0; } }
+        @keyframes demoThuCamera { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 20px #10B981; } }
+        @keyframes demoSatSwipe { 0%, 20% { transform: translate(-50px, 0); opacity: 0; } 30% { transform: translate(-50px, 0); opacity: 1; } 70% { transform: translate(50px, 0); opacity: 1; } 80%, 100% { transform: translate(50px, 0); opacity: 0; } }
+        @keyframes demoSatCloud { 0%, 40% { opacity: 1; filter: blur(2px); } 60%, 80% { opacity: 0; filter: blur(8px); } 90%, 100% { opacity: 1; filter: blur(2px); } }
+        @keyframes demoSunCoin { 0% { top: -10%; left: 50%; opacity: 1; transform: translateX(-50%) rotate(0deg); } 100% { top: 90%; left: 50%; opacity: 0; transform: translateX(-50%) rotate(180deg); } }
+        @keyframes demoSunBasket { 0%, 100% { left: 30%; } 50% { left: 50%; } }
+        @keyframes countDownPop { 0% { transform: scale(0.3); opacity: 0; } 20% { transform: scale(1.1); opacity: 1; } 70% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        @keyframes flyCoin { 0% { transform: scale(1) translate(0, 0); opacity: 1; } 100% { transform: scale(0.5) translate(var(--tx), var(--ty)); opacity: 0; } }
+        @keyframes demoFriPumpSlow { 0% { transform: scale(0.6); } 25% { transform: scale(1.2); } 50% { transform: scale(1.8); } 75% { transform: scale(2.5); opacity: 1; } 85%, 100% { transform: scale(0); opacity: 0; } }
+        @keyframes demoFriClickSlow { 0%, 25%, 50%, 75% { transform: translate(0,0) scale(1); } 12%, 37%, 62%, 80% { transform: translate(-10px, -10px) scale(0.8); } 85%, 100% { opacity: 0; } }
 
-        /* 星期二: 薄荷綠流動發光軌跡 */
-        @keyframes demoTueLaser {
-            0% { width: 0; left: -10%; top: 50%; opacity: 0; }
-            10% { width: 0; left: -10%; top: 50%; opacity: 1; }
-            45% { width: 120%; left: 110%; top: 20%; opacity: 1; box-shadow: 0 0 15px #10B981, 0 0 5px white; }
-            55%, 100% { width: 120%; left: 110%; top: 20%; opacity: 0; }
-        }
-        @keyframes demoTueMailLeft {
-            0%, 40% { transform: translate(0,0) rotate(0deg); opacity: 1; }
-            55%, 100% { transform: translate(-50px, -30px) rotate(-20deg); opacity: 0; }
-        }
-        @keyframes demoTueMailRight {
-            0%, 40% { transform: translate(0,0) rotate(0deg); opacity: 1; }
-            55%, 100% { transform: translate(50px, 30px) rotate(20deg); opacity: 0; }
-        }
-
-        /* 星期三: 5秒與旁邊進度連結 */
-        @keyframes demoWedFill { 0% { height: 0%; } 85% { height: 100%; } 100% { height: 100%; } }
-        @keyframes demoWedTimer { 
-            0% { opacity: 1; content: "0.00s"; }
-            20% { content: "1.25s"; }
-            40% { content: "2.50s"; }
-            60% { content: "3.75s"; }
-            85%, 100% { content: "5.00s"; }
-        }
-
-        /* 星期五: 放慢示範速度 */
-        @keyframes demoFriPumpSlow {
-            0% { transform: scale(0.6); }
-            25% { transform: scale(1.2); }
-            50% { transform: scale(1.8); }
-            75% { transform: scale(2.5); opacity: 1; }
-            85%, 100% { transform: scale(0); opacity: 0; }
-        }
-        @keyframes demoFriClickSlow {
-            0%, 25%, 50%, 75% { transform: translate(0,0) scale(1); }
-            12%, 37%, 62%, 80% { transform: translate(-10px, -10px) scale(0.8); }
-            85%, 100% { opacity: 0; }
-        }
-
-        /* 倒數動畫 */
-        @keyframes countDownPop {
-            0% { transform: scale(0.3); opacity: 0; }
-            20% { transform: scale(1.1); opacity: 1; }
-            70% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-
-        /* 遊戲組件樣式 (已優化筆的結構與旋轉中心) */
+        /* 遊戲組件樣式 */
         .target-circle { width: 160px; height: 160px; border-radius: 50%; background: #e5e7eb; border: 6px solid #9ca3af; position: relative; z-index: 10; }
-        
         .pen-stuck { position: absolute; width: 8px; top: 100%; left: 50%; margin-left: -4px; transform-origin: 50% -80px; z-index: 20; }
         .shooter-pen { position: absolute; width: 8px; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 100px; z-index: 30; }
-        
         .pen-body { width: 6px; height: 45px; background: #10B981; margin: 0 auto; border-radius: 2px; }
         .pen-tip { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 12px solid #374151; margin: 0 auto; }
-
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
 
-        .demo-timer::after { content: "0.00s"; animation: demoWedTimer 4s infinite linear; }
+        .balloon-knot {
+            position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+            border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 16px solid #34D399;
+            z-index: -1;
+        }
+
+        .flying-coin { position: fixed; width: 40px; height: 40px; z-index: 9999; pointer-events: none; animation: flyCoin 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; object-fit: contain; }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <header class="p-4 shrink-0 text-center">
+    <!-- 頂部全域 Header -->
+    <header class="p-4 shrink-0 text-center relative">
         <h1 class="text-3xl font-black tracking-tight uppercase">GapSense</h1>
         <p class="text-sm font-bold text-emerald-600 uppercase tracking-widest italic mb-4 mt-1">Weekly De-stress</p>
         
-        <div class="flex justify-between gap-2 overflow-x-auto no-scrollbar max-w-sm mx-auto">
+        <!-- 全域 Life Coins 錢包 -->
+        <div class="absolute top-4 right-4 bg-white/90 px-3 py-1.5 rounded-full font-black text-emerald-800 flex items-center gap-2 shadow-md border border-emerald-100 z-50" id="wallet-ui">
+            <div class="w-8 h-8 flex items-center justify-center"><img src="" id="wallet-coin-icon" class="w-full h-full object-contain drop-shadow-sm"></div>
+            <span id="global-coins" class="text-lg">0</span>
+        </div>
+
+        <div class="flex justify-between gap-2 overflow-x-auto no-scrollbar max-w-sm mx-auto px-2">
             <div onclick="switchDay(1)" id="btn-1" class="nav-btn flex-1 py-3 glass-card font-black text-base">M</div>
             <div onclick="switchDay(2)" id="btn-2" class="nav-btn flex-1 py-3 glass-card font-black text-base">T</div>
             <div onclick="switchDay(3)" id="btn-3" class="nav-btn flex-1 py-3 glass-card font-black text-base">W</div>
             <div onclick="switchDay(4)" id="btn-4" class="nav-btn flex-1 py-3 glass-card font-black text-base">T</div>
             <div onclick="switchDay(5)" id="btn-5" class="nav-btn flex-1 py-3 glass-card font-black text-base">F</div>
             <div onclick="switchDay(6)" id="btn-6" class="nav-btn flex-1 py-3 glass-card font-black text-base">S</div>
-            <div onclick="switchDay(0)" id="btn-0" class="nav-btn flex-1 py-3 glass-card font-black text-base">S</div>
+            <div onclick="switchDay(7)" id="btn-7" class="nav-btn flex-1 py-3 glass-card font-black text-base">S</div>
         </div>
     </header>
 
     <main id="game-container" class="flex-1 flex flex-col items-center justify-between py-4 relative">
         <div id="game-scene" class="game-canvas"></div>
-        
         <div class="w-full max-w-xs px-4 mb-6 z-40">
             <div class="glass-card p-4 flex justify-between items-center shadow-sm">
                 <div id="status-box">
                     <p id="stat-label" class="text-sm text-emerald-700 font-black uppercase italic tracking-widest">Status</p>
                     <p id="stat-value" class="text-2xl font-black text-emerald-950 mt-1">Ready</p>
                 </div>
-                <div id="ai-trigger" class="text-3xl cursor-pointer hover:scale-110 transition-transform">✨</div>
             </div>
         </div>
     </main>
 
     <div id="countdown-overlay" class="fixed inset-0 bg-emerald-950/80 z-[2000] hidden flex-col items-center justify-center backdrop-blur-md">
-        <div id="countdown-text" class="text-white text-[10rem] font-black italic tracking-tighter"></div>
+        <div id="countdown-text" class="text-white text-[30vw] md:text-[10rem] font-black italic tracking-tighter"></div>
     </div>
 
     <div id="game-modal" class="modal-overlay">
-        <div class="glass-card bg-white p-8 max-w-xs w-full text-center shadow-2xl">
-            <h3 id="modal-title" class="font-black text-2xl mb-3 text-emerald-900">任務完成</h3>
-            <div id="modal-content" class="mb-8 text-lg font-semibold text-gray-600 leading-relaxed"></div>
-            <button id="modal-btn" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black text-xl">繼續</button>
+        <div class="glass-card bg-white p-8 max-w-xs w-full text-center shadow-2xl relative overflow-hidden">
+            <h3 id="modal-title" class="font-black text-2xl mb-3 text-emerald-900 relative z-10">任務完成</h3>
+            <div id="modal-content" class="mb-4 text-lg font-semibold text-gray-600 leading-relaxed relative z-10"></div>
+            <div id="modal-reward" class="hidden flex-col items-center justify-center mb-6 py-4 bg-emerald-50 rounded-xl border border-emerald-200 shadow-inner relative z-10">
+                <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">獲得 Life Coins 獎勵</p>
+                <div class="flex items-center gap-2 text-4xl font-black text-emerald-700">
+                    <div class="w-16 h-16 flex items-center justify-center"><img src="" id="modal-coin-icon" class="w-full h-full object-contain drop-shadow-md"></div> <span id="modal-coin-amount">+0</span>
+                </div>
+            </div>
+            <button id="modal-btn" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black text-xl active:scale-95 transition-transform relative z-10">繼續</button>
         </div>
     </div>
 
     <script>
-        const apiKey = "";
+        const apiKey = ""; 
         let currentDay = 1;
         let countdownTimer = null;
         
-        // 狀態管理
-        let monState = 'setup', monLevel = 1, monPensLeft = 0, monLives = 3, monRotation = 0, monStuckAngles = [], monBossImg = null, monIsShooting = false, monAnimId = null;
-        let tueAnimId = null, tueCanvas, tueCtx, tueState = 'setup', tueScore = 0, tueLives = 3, tueEnvelopes = [], tueParticles = [], tueTrail = [], tueIsSwiping = false, tueFrameCount = 0;
-        let wedAnimId = null, wedState = 'setup', wedStartTime = 0, wedIsPressing = false, wedLastVibeTime = 0, wedPerfectBrews = parseInt(localStorage.getItem('gapSense_wedScore')) || 0;
-        let thuState = 'setup', thuStep = 0;
-        let friState = 'setup', friPopProgress = 0, friIsExploded = false;
+        // --- 高度還原 Life Coin SVG (修正圓弧、間距與粗幼度) ---
+        // 外圈圓 r=50 (直徑100)，薄荷綠底色。
+        // 外弧: r=35, stroke-width=10, 確保右上有完美的開口。
+        // 內部L型指針: 向上指至 y=33, 向右指至 x=67, 確保與外弧留有完美的間距。
+        const lifeCoinSvgRaw = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="50" fill="#90A96B"/>
+            <path d="M 85 50 A 35 35 0 1 1 50 15" fill="none" stroke="white" stroke-width="10" stroke-linecap="round"/>
+            <path d="M 50 33 L 50 50 L 67 50" fill="none" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+        const LIFE_COIN_SRC = 'data:image/svg+xml;base64,' + btoa(lifeCoinSvgRaw);
+        
+        // 初始化錢包與彈窗的圖標
+        document.getElementById('wallet-coin-icon').src = LIFE_COIN_SRC;
+        document.getElementById('modal-coin-icon').src = LIFE_COIN_SRC;
+        
+        // 全域金幣管理
+        let totalLifeCoins = parseInt(localStorage.getItem('gapSense_lifeCoins')) || 0;
+        document.getElementById('global-coins').innerText = totalLifeCoins;
 
-        async function callGemini(prompt, system = "You are a witty zen master.") {
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        systemInstruction: { parts: [{ text: system }] }
-                    })
-                });
-                const data = await response.json();
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
-            } catch { return "繼續加油！"; }
+        function addLifeCoins(amount) {
+            totalLifeCoins += amount;
+            localStorage.setItem('gapSense_lifeCoins', totalLifeCoins);
+            document.getElementById('global-coins').innerText = totalLifeCoins;
         }
 
+        // 飛行動畫
+        function animateCoinsToWallet(amount, startRect) {
+            const walletRect = document.getElementById('wallet-ui').getBoundingClientRect();
+            for(let i=0; i<Math.min(amount, 10); i++) {
+                setTimeout(() => {
+                    const coin = document.createElement('img');
+                    coin.src = LIFE_COIN_SRC;
+                    coin.className = 'flying-coin';
+                    coin.style.left = `${startRect.left + startRect.width/2 - 20}px`;
+                    coin.style.top = `${startRect.top + startRect.height/2 - 20}px`;
+                    
+                    const tx = walletRect.left + 10 - (startRect.left + startRect.width/2 - 20);
+                    const ty = walletRect.top + 10 - (startRect.top + startRect.height/2 - 20);
+                    coin.style.setProperty('--tx', `${tx}px`);
+                    coin.style.setProperty('--ty', `${ty}px`);
+                    
+                    document.body.appendChild(coin);
+                    setTimeout(() => coin.remove(), 800);
+                }, i * 60);
+            }
+        }
+
+        // Gemini API 呼叫
+        async function callGemini(prompt, system = "You are a helpful assistant.", base64Image = null) {
+            try {
+                let parts = [{ text: prompt }];
+                if (base64Image) {
+                    const mimeType = base64Image.substring(5, base64Image.indexOf(';'));
+                    const data = base64Image.split(',')[1];
+                    parts.push({ inlineData: { mimeType: mimeType, data: data } });
+                }
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ role: "user", parts: parts }], systemInstruction: { parts: [{ text: system }] } })
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "YES";
+            } catch (error) { return "YES"; }
+        }
+
+        // 各日狀態
+        let monState = 'setup', monLevel = 1, monPensLeft = 0, monLives = 3, monRotation = 0, monStuckAngles = [], monBossImg = null, monIsShooting = false, monAnimId = null;
+        let tueAnimId = null, tueCanvas, tueCtx, tueState = 'setup', tueScore = 0, tueHighScore = parseInt(localStorage.getItem('gapSense_tueHigh')) || 0, tueLives = 3, tueEnvelopes = [], tueParticles = [], tueTrail = [], tueIsSwiping = false, tueFrameCount = 0;
+        let wedAnimId = null, wedState = 'setup', wedLevel = 1, wedTargets = [5, 7, 15], wedStartTime = 0, wedIsPressing = false;
+        let thuState = 'setup', thuScore = 0;
+        let friState = 'setup', friPopProgress = 0, friIsExploded = false, friTargetImg = null, friAnimId = null;
+        let satState = 'setup', satCanvas, satCtx, satIsSwiping = false, satCoinsCollected = 0, satTotalCoins = 0, satCoins = [], satWindParticles = [], satLastPos = null;
+        let sunAnimId = null, sunCanvas, sunCtx, sunState = 'setup', sunScore = 0, sunLives = 3, sunCoins = [], sunBasketX = 0, sunFrameCount = 0;
+
         function startCountdown(callback) {
-            const overlay = document.getElementById('countdown-overlay');
-            const text = document.getElementById('countdown-text');
-            overlay.style.display = 'flex';
-            let count = 3;
-            const animateText = (str) => {
-                text.innerText = str;
-                text.style.animation = 'none';
-                void text.offsetWidth; 
-                text.style.animation = 'countDownPop 1s ease-in-out forwards';
-            };
+            const overlay = document.getElementById('countdown-overlay'); const text = document.getElementById('countdown-text');
+            overlay.style.display = 'flex'; let count = 3;
+            const animateText = (str) => { text.innerText = str; text.style.animation = 'none'; void text.offsetWidth; text.style.animation = 'countDownPop 1s ease-in-out forwards'; };
             animateText(count);
             if(countdownTimer) clearInterval(countdownTimer);
             countdownTimer = setInterval(() => {
@@ -222,204 +231,150 @@
 
         function switchDay(day) {
             currentDay = day;
-            if (monAnimId) cancelAnimationFrame(monAnimId);
-            if (tueAnimId) cancelAnimationFrame(tueAnimId);
-            if (wedAnimId) cancelAnimationFrame(wedAnimId);
+            cancelAnimationFrame(monAnimId); cancelAnimationFrame(tueAnimId); cancelAnimationFrame(wedAnimId); cancelAnimationFrame(friAnimId); cancelAnimationFrame(sunAnimId);
             if (countdownTimer) clearInterval(countdownTimer);
             document.getElementById('countdown-overlay').style.display = 'none';
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            const activeBtn = document.getElementById(`btn-${day}`);
-            if(activeBtn) activeBtn.classList.add('active');
+            const activeBtn = document.getElementById(`btn-${day}`); if(activeBtn) activeBtn.classList.add('active');
+            monState = 'setup'; tueState = 'setup'; wedState = 'setup'; thuState = 'setup'; friState = 'setup'; satState = 'setup'; sunState = 'setup';
             render();
         }
 
         function render() {
-            const scene = document.getElementById('game-scene');
-            const statValue = document.getElementById('stat-value');
-            const statLabel = document.getElementById('stat-label');
-            const aiTrigger = document.getElementById('ai-trigger');
-            scene.innerHTML = ''; aiTrigger.style.display = 'none';
-
-            if (currentDay === 1) {
-                renderMonday(scene);
-                statLabel.innerText = monState === 'setup' ? "STATUS" : "PENS LEFT";
-                statValue.innerText = monState === 'setup' ? "READY" : monPensLeft;
-            } else if (currentDay === 2) {
-                renderTuesday(scene);
-                statLabel.innerText = "MAILS SLICED";
-                statValue.innerText = tueState === 'setup' ? "READY" : tueScore;
-            } else if (currentDay === 3) {
-                renderWednesday(scene);
-                statLabel.innerText = "PERFECT CUPS";
-                statValue.innerText = wedPerfectBrews;
-            } else if (currentDay === 4) {
-                renderThursday(scene);
-                statLabel.innerText = "SENSORY STEP";
-                statValue.innerText = thuState === 'setup' ? "READY" : `${thuStep + 1} / 3`;
-            } else if (currentDay === 5) {
-                if (friState === 'playing') aiTrigger.style.display = 'block';
-                renderFriday(scene);
-                statLabel.innerText = "PRESSURE";
-                statValue.innerText = Math.floor(friPopProgress) + "%";
-            } else {
-                scene.innerHTML = '<div class="glass-card p-10 font-bold text-center italic text-gray-400 text-xl">COMING SOON</div>';
-            }
+            const scene = document.getElementById('game-scene'); const statValue = document.getElementById('stat-value'); const statLabel = document.getElementById('stat-label');
+            scene.innerHTML = '';
+            if (currentDay === 1) { renderMonday(scene); statLabel.innerText = "LEVEL"; statValue.innerText = monState === 'setup' ? "READY" : `${monLevel} / 3`; } 
+            else if (currentDay === 2) { renderTuesday(scene); statLabel.innerText = "SCORE | BEST"; statValue.innerText = tueState === 'setup' ? `0 | ${tueHighScore}` : `${tueScore} | ${tueHighScore}`; } 
+            else if (currentDay === 3) { renderWednesday(scene); statLabel.innerText = "LEVEL"; statValue.innerText = wedState === 'setup' ? `STAGE ${wedLevel}` : `STAGE ${wedLevel}`; } 
+            else if (currentDay === 4) { renderThursday(scene); statLabel.innerText = "SENSORY FOUND"; statValue.innerText = thuState === 'setup' ? "READY" : `${thuScore} / 3`; } 
+            else if (currentDay === 5) { renderFriday(scene); statLabel.innerText = "PRESSURE"; statValue.innerText = Math.floor(friPopProgress) + "%"; } 
+            else if (currentDay === 6) { renderSaturday(scene); statLabel.innerText = "COINS FOUND"; statValue.innerText = satState === 'setup' ? "READY" : `${satCoinsCollected} / ${satTotalCoins}`; } 
+            else if (currentDay === 7) { renderSunday(scene); statLabel.innerText = "COINS CAUGHT"; statValue.innerText = sunState === 'setup' ? "READY" : sunScore; }
         }
 
-        // --- 星期一 (精準停靠物理動畫) ---
+        // --- 星期一 (Monday) ---
         function renderMonday(scene) {
             if (monState === 'setup') {
-                scene.innerHTML = `
-                    <div class="glass-card p-6 flex flex-col items-center gap-4 w-80 text-center">
-                        <div class="flex items-center justify-center h-32 w-full mb-1 bg-white rounded-xl shadow-inner overflow-hidden">
-                            <div class="relative w-[80px] h-[80px] mt-[-20px]">
-                                <div class="w-full h-full rounded-full border-[4px] border-gray-200 relative z-10 bg-white" style="animation: demoMonRotation 2s linear infinite;">
-                                    <div class="absolute w-1.5 top-[100%] left-[50%] ml-[-3px]" style="transform-origin: 50% -40px; animation: demoMonStuckAppear 2s infinite linear;">
-                                        <div class="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[8px] border-b-gray-700 mx-auto"></div>
-                                        <div class="w-1 h-5 bg-emerald-500 mx-auto rounded-sm"></div>
-                                    </div>
-                                </div>
-                                <div class="absolute w-1.5 top-[100%] left-[50%] ml-[-3px] z-20" style="animation: demoMonShooting 2s infinite linear;">
-                                    <div class="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[8px] border-b-gray-700 mx-auto"></div>
-                                    <div class="w-1 h-5 bg-emerald-600 mx-auto rounded-sm shadow-md"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Monday Pen Shot</h2>
-                        <div class="w-full flex flex-col gap-3">
-                            <div id="mon-upload" class="w-full h-32 rounded-xl border-2 border-dashed border-emerald-400 bg-white flex items-center justify-center overflow-hidden cursor-pointer shadow-md transition-all hover:border-emerald-600">
-                                ${monBossImg ? `<img src="${monBossImg}" class="max-w-full max-h-full object-contain">` : `
-                                    <div class="flex flex-col items-center">
-                                        <span class="text-3xl mb-1">📸</span>
-                                        <span class="font-black text-emerald-500 uppercase text-xs">選擇壓力源照片</span>
-                                    </div>
-                                `}
-                            </div>
-                            ${monBossImg ? `
-                                <button onclick="startMonGame()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-lg shadow-lg animate-bounce">開始擊碎壓力</button>
-                            ` : `
-                                <p class="text-[10px] text-gray-500 font-bold italic uppercase tracking-tighter">Please select a photo to begin</p>
-                            `}
-                        </div>
-                        <input type="file" id="mon-file" class="hidden" accept="image/*">
-                    </div>
-                `;
+                scene.innerHTML = `<div class="glass-card p-6 flex flex-col items-center gap-4 w-80 text-center mx-auto"><div class="flex items-center justify-center h-32 w-full mb-1 bg-white rounded-xl shadow-inner overflow-hidden"><div class="relative w-[80px] h-[80px] mt-[-20px] flex items-center justify-center"><div class="w-full h-full rounded-full border-[4px] border-gray-200 relative z-10 bg-white" style="animation: demoMonRotation 2s linear infinite;"><div class="absolute w-1.5 top-[100%] left-[50%] ml-[-3px]" style="transform-origin: 50% -40px; animation: demoMonStuckAppear 2s infinite linear;"><div class="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[8px] border-b-gray-700 mx-auto"></div><div class="w-1 h-5 bg-emerald-500 mx-auto rounded-sm"></div></div></div><div class="absolute w-1.5 top-[100%] left-[50%] ml-[-3px] z-20" style="animation: demoMonShooting 2s infinite linear;"><div class="w-1 h-5 bg-emerald-600 mx-auto rounded-sm shadow-md"></div></div></div></div><h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Monday Pen Shot</h2><p class="text-xs font-bold text-gray-500">完成 3 個階段以獲取最高獎勵</p><div class="w-full flex flex-col gap-3"><div id="mon-upload" class="w-full h-24 rounded-xl border-2 border-dashed border-emerald-400 bg-white flex items-center justify-center cursor-pointer overflow-hidden">${monBossImg ? `<img src="${monBossImg}" class="max-w-full max-h-full object-contain">` : `<span class="text-emerald-500 font-bold text-xs uppercase">點擊上傳壓力源</span>`}</div><input type="file" id="mon-file" class="hidden" accept="image/*">${monBossImg ? `<button onclick="monLevel=1; startMonGame()" class="bg-emerald-600 text-white py-3 rounded-xl font-black text-lg animate-bounce">開始擊碎壓力</button>` : ''}</div></div>`;
                 document.getElementById('mon-upload').onclick = () => document.getElementById('mon-file').click();
-                document.getElementById('mon-file').onchange = (e) => {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => { monBossImg = ev.target.result; render(); };
-                    reader.readAsDataURL(e.target.files[0]);
-                };
+                document.getElementById('mon-file').onchange = (e) => { const reader = new FileReader(); reader.onload = (ev) => { monBossImg = ev.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); };
             } else {
-                scene.innerHTML = `
-                    <div id="mon-play-area" class="w-full h-full relative flex items-center justify-center">
-                        <div id="mon-stats" class="absolute top-4 left-4 text-sm font-black uppercase text-emerald-900 bg-white/50 px-3 py-1 rounded-full shadow-sm">
-                            Lvl ${monLevel} | ❤️ <span id="mon-lives-display">${monLives}</span>
-                        </div>
-                        <div class="relative w-[160px] h-[160px]" id="mon-target-wrap">
-                            <div id="mon-target-circle" class="target-circle overflow-hidden shadow-lg border-4 border-gray-300 w-full h-full">
-                                ${monBossImg ? `<img src="${monBossImg}" class="w-full h-full object-cover">` : ''}
-                            </div>
-                            <div id="mon-stuck-layer" class="absolute inset-0 pointer-events-none"></div>
-                            <div id="mon-shooter" class="shooter-pen">
-                                <div class="pen-tip"></div><div class="pen-body"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                scene.innerHTML = `<div id="mon-play-area" class="w-full h-full relative flex items-center justify-center"><div id="mon-stats" class="absolute top-4 left-4 text-sm font-black uppercase text-emerald-900 bg-white/60 px-3 py-1 rounded-full shadow-sm">🎯剩餘: <span id="mon-pens-left">${monPensLeft}</span> | ❤️ <span id="mon-lives-display">${monLives}</span></div><div class="relative w-[160px] h-[160px]" id="mon-target-wrap"><div id="mon-target-circle" class="target-circle overflow-hidden w-full h-full">${monBossImg ? `<img src="${monBossImg}" class="w-full h-full object-cover">` : ''}</div><div id="mon-stuck-layer" class="absolute inset-0 pointer-events-none"></div><div id="mon-shooter" class="shooter-pen"><div class="pen-tip"></div><div class="pen-body"></div></div></div></div>`;
                 monAnimId = requestAnimationFrame(monLoop);
                 document.getElementById('mon-play-area').onpointerdown = (e) => { e.preventDefault(); shootMonPen(); };
             }
         }
-        function startMonGame() { startCountdown(() => { monState = 'playing'; monPensLeft = 6 + (monLevel * 2); monStuckAngles = []; monLives = 3; render(); }); }
+        function startMonGame() { 
+            startCountdown(() => { 
+                monState = 'playing'; 
+                monPensLeft = 5 + monLevel; 
+                monStuckAngles = []; 
+                monLives = 3; 
+                render(); 
+                document.getElementById('mon-pens-left').innerText = monPensLeft;
+            }); 
+        }
         function monLoop() {
             if (currentDay !== 1 || monState !== 'playing') return;
-            monRotation += 1.2 + (monLevel * 0.4);
-            const target = document.getElementById('mon-target-circle');
-            const layer = document.getElementById('mon-stuck-layer');
-            if (target) target.style.transform = `rotate(${monRotation}deg)`;
-            if (layer) layer.style.transform = `rotate(${monRotation}deg)`;
+            monRotation += 1.0 + (monLevel * 0.2); 
+            const target = document.getElementById('mon-target-circle'); const layer = document.getElementById('mon-stuck-layer');
+            if (target) target.style.transform = `rotate(${monRotation}deg)`; if (layer) layer.style.transform = `rotate(${monRotation}deg)`;
             monAnimId = requestAnimationFrame(monLoop);
         }
         function shootMonPen() {
             if (monIsShooting || monState !== 'playing') return;
-            monIsShooting = true;
-            const shooter = document.getElementById('mon-shooter');
-            const targetWrap = document.getElementById('mon-target-wrap');
-            
-            // 物理優化：將 shooter-pen 的 margin-top 設為 0，使其筆尖剛好精準停在圓圈邊緣
-            shooter.style.transition = 'margin-top 0.12s cubic-bezier(0.2, 0.8, 0.4, 1)';
-            shooter.style.marginTop = '0px';
-
+            monIsShooting = true; const shooter = document.getElementById('mon-shooter');
+            shooter.style.transition = 'margin-top 0.1s linear'; shooter.style.marginTop = '0px';
             setTimeout(() => {
                 const hitAngle = (360 - (monRotation % 360)) % 360;
-                const isCollision = monStuckAngles.some(a => { let d = Math.abs(a - hitAngle); return (d > 180 ? 360 - d : d) < 14; });
-                
+                const isCollision = monStuckAngles.some(a => Math.abs(a - hitAngle) < 10); 
                 if (isCollision) {
-                    // 碰撞反彈
-                    shooter.style.transition = 'transform 0.4s ease-in, margin-top 0.4s ease-in';
-                    shooter.style.transform = 'translateX(-50%) rotate(45deg)';
-                    shooter.style.marginTop = '200px';
-                    
+                    shooter.style.transition = 'transform 0.4s, margin-top 0.4s'; shooter.style.transform = 'translateX(-50%) rotate(45deg)'; shooter.style.marginTop = '200px';
                     monLives--; document.getElementById('mon-lives-display').innerText = monLives;
                     setTimeout(() => {
-                        if (monLives <= 0) showModal("任務失敗", "壓力反彈！再來一次？", "重試", () => { monLevel = 1; monState = 'setup'; render(); });
-                        else { 
-                            shooter.style.transition = 'none'; 
-                            shooter.style.transform = 'translateX(-50%) rotate(0deg)'; 
-                            shooter.style.marginTop = '100px'; 
-                            monIsShooting = false; 
-                        }
+                        if (monLives <= 0) {
+                            const reward = monLevel * 4; 
+                            showModal("挑戰結束", `你倒在了第 ${monLevel} 階段。拿走這些硬幣，下次再來！`, "領取安慰獎", () => { monState = 'setup'; monLevel = 1; render(); }, reward);
+                        } else { shooter.style.transition = 'none'; shooter.style.transform = 'translateX(-50%)'; shooter.style.marginTop = '100px'; monIsShooting = false; }
                     }, 400);
                 } else {
-                    // 成功插入，附加至旋轉層中並跟隨旋轉
                     monStuckAngles.push(hitAngle);
-                    const layer = document.getElementById('mon-stuck-layer');
-                    if (layer) {
-                        const pen = document.createElement('div'); 
-                        pen.className = 'pen-stuck';
-                        pen.style.transform = `rotate(${hitAngle}deg)`;
-                        pen.innerHTML = `<div class="pen-tip"></div><div class="pen-body"></div>`;
-                        layer.appendChild(pen);
-                        
-                        targetWrap.style.transform = 'scale(0.95)';
-                        setTimeout(() => targetWrap.style.transform = 'scale(1)', 50);
-                    }
-                    
-                    if (navigator.vibrate) navigator.vibrate([20]);
-                    monPensLeft--; document.getElementById('stat-value').innerText = monPensLeft;
-                    
-                    shooter.style.transition = 'none'; 
-                    shooter.style.marginTop = '100px'; 
-                    monIsShooting = false;
-
+                    const pen = document.createElement('div'); pen.className = 'pen-stuck'; pen.style.transform = `rotate(${hitAngle}deg)`; pen.innerHTML = `<div class="pen-tip"></div><div class="pen-body"></div>`;
+                    document.getElementById('mon-stuck-layer').appendChild(pen);
+                    monPensLeft--; document.getElementById('mon-pens-left').innerText = monPensLeft;
+                    shooter.style.transition = 'none'; shooter.style.marginTop = '100px'; monIsShooting = false;
                     if (monPensLeft <= 0) {
-                        monState = 'complete';
-                        setTimeout(() => {
-                            showModal("解壓成功", `等級 ${monLevel} 已清除！`, "下一關", () => { monLevel++; startMonGame(); });
-                        }, 100);
+                        if (monLevel >= 3) {
+                            showModal("解壓大師！", "你成功擊碎了所有階段的壓力，獲得最高獎勵！", "完美結算", () => { monState = 'setup'; monLevel = 1; render(); }, 20);
+                        } else {
+                            showModal("階段成功", `準備進入第 ${monLevel + 1} 階段！`, "下一關", () => { monLevel++; startMonGame(); }, 0);
+                        }
                     }
                 }
-            }, 120);
+            }, 100);
         }
 
-        // --- 星期二 ---
+        // --- 星期二 (Tuesday) ---
         function renderTuesday(scene) {
             if (tueState === 'setup') {
-                scene.innerHTML = `
-                    <div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center">
-                        <div class="flex items-center justify-center h-32 w-full relative mb-2 rounded-xl bg-white shadow-inner overflow-hidden">
-                            <div class="absolute w-20 h-12 border-2 border-red-500 bg-white flex items-center justify-center font-black text-red-500 z-10" style="animation: demoTueMailLeft 4s infinite;">AS</div>
-                            <div class="absolute w-20 h-12 border-2 border-red-500 bg-white flex items-center justify-center font-black text-red-500 z-10" style="animation: demoTueMailRight 4s infinite;">AP</div>
-                            <div class="absolute h-1 bg-emerald-400 z-20 rotate-[-15deg] blur-[1px]" style="animation: demoTueLaser 4s infinite;"></div>
-                        </div>
-                        <h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Tuesday Mail Slice</h2>
-                        <p class="text-sm text-gray-600 font-bold leading-relaxed">用指尖劃過，切碎所有緊急郵件！</p>
-                        <button onclick="startTueGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始切除</button>
-                    </div>
-                `;
+                scene.innerHTML = `<div class="glass-card p-8 flex flex-col items-center gap-4 w-80 text-center mx-auto"><div class="flex items-center justify-center h-32 w-full relative bg-white shadow-inner overflow-hidden border border-gray-200 rounded-xl" style="background: #DCFCE7;"><canvas id="tue-demo-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas></div><h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Tuesday 3D Slice</h2><p class="text-sm text-gray-600 font-bold">最高紀錄: ${tueHighScore}</p><button onclick="startTueGame()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-lg shadow-lg">開始切除郵件</button></div>`;
+                setTimeout(() => {
+                    const demoCanvas = document.getElementById('tue-demo-canvas');
+                    if(!demoCanvas) return;
+                    const dctx = demoCanvas.getContext('2d');
+                    demoCanvas.width = demoCanvas.clientWidth; demoCanvas.height = demoCanvas.clientHeight;
+                    let demoFrame = 0, demoEnvelopes = [], demoParticles = [], demoTrail = [];
+                    function demoLoop() {
+                        if (currentDay !== 2 || tueState !== 'setup') return;
+                        demoFrame++; dctx.clearRect(0, 0, demoCanvas.width, demoCanvas.height);
+                        dctx.save(); dctx.strokeStyle = 'rgba(16, 185, 129, 0.15)'; dctx.lineWidth = 1;
+                        const gridOffset = (demoFrame * 2) % 40;
+                        for(let i=0; i<demoCanvas.width; i+=40) { dctx.beginPath(); dctx.moveTo(i, 0); dctx.lineTo(i, demoCanvas.height); dctx.stroke(); }
+                        for(let i=gridOffset - 40; i<demoCanvas.height; i+=40) { dctx.beginPath(); dctx.moveTo(0, i); dctx.lineTo(demoCanvas.width, i); dctx.stroke(); }
+                        dctx.restore();
+
+                        if (demoFrame % 100 === 20) demoEnvelopes.push({ x: demoCanvas.width/2, y: demoCanvas.height + 20, vy: -5, rot: 0 });
+                        
+                        if (demoFrame % 100 === 60) {
+                            demoTrail = [{x: 20, y: 30}, {x: demoCanvas.width-20, y: demoCanvas.height-30}];
+                            for (let i = demoEnvelopes.length - 1; i >= 0; i--) {
+                                const env = demoEnvelopes[i]; const colors = ['#EF4444', '#10B981', '#FBBF24', '#FFFFFF'];
+                                for(let j=0; j<15; j++) demoParticles.push({x:env.x, y:env.y, vx:(Math.random()-0.5)*15, vy:(Math.random()-0.5)*15, rot: Math.random()*Math.PI, vrot: (Math.random()-0.5)*0.8, alpha:1, c: colors[Math.floor(Math.random()*colors.length)], type: 'confetti'});
+                                for(let j=0; j<10; j++) demoParticles.push({x:env.x, y:env.y, vx:(Math.random()-0.5)*20, vy:(Math.random()-0.5)*20, rot: 0, vrot: 0, alpha:1, c: '#10B981', type: 'sparkle'});
+                                demoEnvelopes.splice(i, 1);
+                                dctx.fillStyle = 'rgba(255,255,255,0.8)'; dctx.fillRect(0,0,demoCanvas.width,demoCanvas.height); 
+                            }
+                        }
+                        if (demoFrame % 100 === 70) demoTrail = [];
+
+                        for (let i = demoParticles.length - 1; i >= 0; i--) {
+                            const p = demoParticles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.3; p.rot += p.vrot; p.alpha -= 0.03;
+                            if (p.alpha <= 0) demoParticles.splice(i, 1);
+                            else { 
+                                dctx.save(); dctx.translate(p.x, p.y); dctx.rotate(p.rot); dctx.globalAlpha = p.alpha;
+                                dctx.fillStyle = p.c; if(p.type === 'confetti') dctx.fillRect(-4, -6, 8, 12); else dctx.fillRect(-2, -2, 4, 4);
+                                dctx.restore();
+                            }
+                        }
+                        for (let i = demoEnvelopes.length - 1; i >= 0; i--) {
+                            const env = demoEnvelopes[i]; env.y += env.vy; env.vy += 0.15; env.rot += 0.02;
+                            dctx.save(); dctx.translate(env.x, env.y); dctx.rotate(env.rot);
+                            dctx.fillStyle = 'white'; dctx.shadowBlur = 10; dctx.shadowColor = 'rgba(0,0,0,0.1)'; dctx.fillRect(-30, -20, 60, 40);
+                            dctx.shadowBlur = 0; dctx.strokeStyle = '#EF4444'; dctx.lineWidth = 2; dctx.strokeRect(-30, -20, 60, 40);
+                            dctx.fillStyle = '#EF4444'; dctx.font = '900 10px Inter'; dctx.textAlign = 'center'; dctx.fillText('URGENT', 0, 4);
+                            dctx.restore();
+                        }
+                        if (demoTrail.length > 1) {
+                            dctx.beginPath(); dctx.strokeStyle = '#34D399'; dctx.shadowBlur = 10; dctx.shadowColor = '#10B981'; dctx.lineWidth = 6; dctx.lineCap = 'round';
+                            dctx.moveTo(demoTrail[0].x, demoTrail[0].y); dctx.lineTo(demoTrail[1].x, demoTrail[1].y);
+                            dctx.stroke(); dctx.shadowBlur = 0;
+                        }
+                        tueAnimId = requestAnimationFrame(demoLoop);
+                    }
+                    demoLoop();
+                }, 50);
             } else {
-                scene.innerHTML = `<canvas id="tue-canvas" class="w-full h-full absolute inset-0 z-20 touch-none"></canvas>`;
+                scene.innerHTML = `<div id="tue-wrap" class="w-full h-full relative overflow-hidden"><canvas id="tue-canvas" class="w-full h-full absolute inset-0 z-20 touch-none"></canvas></div><div id="tue-lives" class="absolute top-4 right-4 text-2xl z-30 drop-shadow-md">❤️❤️❤️</div>`;
                 tueCanvas = document.getElementById('tue-canvas'); tueCtx = tueCanvas.getContext('2d');
                 tueCanvas.width = scene.clientWidth; tueCanvas.height = scene.clientHeight;
                 tueCanvas.onpointerdown = (e) => { tueIsSwiping = true; const rect = tueCanvas.getBoundingClientRect(); tueTrail = [{ x: e.clientX - rect.left, y: e.clientY - rect.top }]; };
@@ -428,66 +383,127 @@
                 tueLoop();
             }
         }
-        function startTueGame() { startCountdown(() => { tueState = 'playing'; tueScore = 0; tueLives = 3; tueEnvelopes = []; tueParticles = []; render(); }); }
+        function startTueGame() { startCountdown(() => { tueState = 'playing'; tueScore = 0; tueLives = 3; tueEnvelopes = []; tueParticles = []; tueFrameCount = 0; render(); }); }
         function tueLoop() {
             if (currentDay !== 2 || tueState !== 'playing') return;
-            tueFrameCount++; if (tueFrameCount % 50 === 0) spawnTueEnvelope(); 
+            tueFrameCount++;
+            
+            const spawnRate = Math.max(30, 80 - Math.floor(tueScore / 5) * 5);
+            if (tueFrameCount % spawnRate === 0) spawnTueEnvelope();
+
             tueCtx.fillStyle = '#DCFCE7'; tueCtx.fillRect(0, 0, tueCanvas.width, tueCanvas.height);
+            
+            tueCtx.save();
+            tueCtx.strokeStyle = 'rgba(16, 185, 129, 0.2)'; tueCtx.lineWidth = 1;
+            const gridOffset = (tueFrameCount * 2) % 40;
+            for(let i=0; i<tueCanvas.width; i+=40) { tueCtx.beginPath(); tueCtx.moveTo(i, 0); tueCtx.lineTo(i, tueCanvas.height); tueCtx.stroke(); }
+            for(let i=gridOffset - 40; i<tueCanvas.height; i+=40) { tueCtx.beginPath(); tueCtx.moveTo(0, i); tueCtx.lineTo(tueCanvas.width, i); tueCtx.stroke(); }
+            tueCtx.restore();
+
             for (let i = tueParticles.length - 1; i >= 0; i--) {
-                const p = tueParticles[i]; p.x += p.vx; p.y += p.vy; p.alpha -= 0.02;
+                const p = tueParticles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.3; p.rot += p.vrot; p.alpha -= 0.02;
                 if (p.alpha <= 0) tueParticles.splice(i, 1);
-                else { tueCtx.globalAlpha = p.alpha; tueCtx.fillStyle = p.c; tueCtx.fillRect(p.x, p.y, 4, 4); }
+                else { 
+                    tueCtx.save(); tueCtx.translate(p.x, p.y); tueCtx.rotate(p.rot); tueCtx.globalAlpha = p.alpha;
+                    tueCtx.fillStyle = p.c; 
+                    if(p.type === 'confetti') tueCtx.fillRect(-4, -6, 8, 12); 
+                    else tueCtx.fillRect(-2, -2, 4, 4); 
+                    tueCtx.restore();
+                }
             }
-            tueCtx.globalAlpha = 1;
+
             for (let i = tueEnvelopes.length - 1; i >= 0; i--) {
-                const env = tueEnvelopes[i]; 
-                env.y += env.vy; env.vy += 0.15; env.x += env.vx; env.rot += 0.02;
+                const env = tueEnvelopes[i]; env.y += env.vy; env.vy += 0.15; env.x += env.vx; env.rot += 0.05;
                 tueCtx.save(); tueCtx.translate(env.x, env.y); tueCtx.rotate(env.rot);
-                tueCtx.fillStyle = 'white'; tueCtx.shadowBlur = 10; tueCtx.shadowColor = 'rgba(0,0,0,0.1)';
-                tueCtx.fillRect(-40, -25, 80, 50);
-                tueCtx.strokeStyle = env.color; tueCtx.lineWidth = 2; tueCtx.strokeRect(-40, -25, 80, 50);
-                tueCtx.fillStyle = env.color; tueCtx.font = 'bold 14px Inter'; tueCtx.textAlign = 'center'; tueCtx.fillText(env.type, 0, 5);
+                tueCtx.fillStyle = 'white'; tueCtx.shadowBlur = 15; tueCtx.shadowColor = 'rgba(0,0,0,0.15)'; tueCtx.fillRect(-35, -25, 70, 50);
+                tueCtx.shadowBlur = 0; tueCtx.strokeStyle = env.color; tueCtx.lineWidth = 3; tueCtx.strokeRect(-35, -25, 70, 50);
+                tueCtx.fillStyle = env.color; tueCtx.font = '900 12px Inter'; tueCtx.textAlign = 'center'; tueCtx.fillText(env.type, 0, 4);
                 tueCtx.restore();
-                if (env.y > tueCanvas.height + 60) { tueEnvelopes.splice(i, 1); tueLives--; if (tueLives <= 0) showModal("收件匣溢出", "沒關係，明天再回。", "重試", () => { tueState = 'setup'; render(); }); }
+                
+                if (env.y > tueCanvas.height + 60) { 
+                    tueEnvelopes.splice(i, 1); tueLives--; 
+                    document.getElementById('tue-lives').innerText = '❤️'.repeat(tueLives);
+                    if(navigator.vibrate) navigator.vibrate([40, 40]);
+                    if (tueLives <= 0) {
+                        if (tueScore > tueHighScore) { tueHighScore = tueScore; localStorage.setItem('gapSense_tueHigh', tueHighScore); }
+                        const reward = Math.min(20, Math.max(8, Math.floor(tueScore / 2)));
+                        showModal("信箱爆滿", `你成功清理了 ${tueScore} 封繁雜的郵件！`, "領取結算", () => { tueState = 'setup'; render(); }, reward);
+                    }
+                }
             }
             if (tueTrail.length > 1) {
-                tueCtx.beginPath(); tueCtx.strokeStyle = 'rgba(16, 185, 129, 0.6)'; tueCtx.lineWidth = 10; tueCtx.lineCap = 'round';
+                tueCtx.beginPath(); tueCtx.strokeStyle = '#34D399'; tueCtx.shadowBlur = 20; tueCtx.shadowColor = '#10B981'; tueCtx.lineWidth = 10; tueCtx.lineCap = 'round';
                 tueCtx.moveTo(tueTrail[0].x, tueTrail[0].y);
                 for (let i = 1; i < tueTrail.length; i++) tueCtx.lineTo(tueTrail[i].x, tueTrail[i].y);
-                tueCtx.stroke();
+                tueCtx.stroke(); tueCtx.shadowBlur = 0;
             }
-            document.getElementById('stat-value').innerText = tueScore;
             tueAnimId = requestAnimationFrame(tueLoop);
         }
         function spawnTueEnvelope() { 
-            const types = ['ASAP', 'URGENT', 'FYI', 'MEETING'];
-            tueEnvelopes.push({ 
-                x: 50 + Math.random() * (tueCanvas.width - 100), y: tueCanvas.height + 20, 
-                vx: (Math.random() - 0.5) * 3, vy: -10 - Math.random() * 4, 
-                rot: Math.random() * Math.PI, type: types[Math.floor(Math.random()*types.length)], color: '#EF4444' 
-            }); 
+            const types = ['ASAP', 'MEETING', 'FYI'];
+            tueEnvelopes.push({ x: 50 + Math.random()*(tueCanvas.width-100), y: tueCanvas.height, vx: (Math.random()-0.5)*4, vy: -8 - Math.random()*3, rot: 0, type: types[Math.floor(Math.random()*3)], color: '#EF4444' }); 
         }
         function checkTueSlice() {
-            if (tueTrail.length < 2) return;
             const last = tueTrail[tueTrail.length - 1];
             for (let i = tueEnvelopes.length - 1; i >= 0; i--) {
                 const env = tueEnvelopes[i];
-                if (Math.hypot(last.x - env.x, last.y - env.y) < 50) {
-                    for(let j=0; j<8; j++) tueParticles.push({x:env.x, y:env.y, vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10, alpha:1, c:env.color});
-                    if (navigator.vibrate) navigator.vibrate(15);
-                    tueEnvelopes.splice(i, 1); tueScore++;
+                if (Math.hypot(last.x - env.x, last.y - env.y) < 65) {
+                    const colors = ['#EF4444', '#10B981', '#FBBF24', '#FFFFFF'];
+                    for(let j=0; j<15; j++) tueParticles.push({x:env.x, y:env.y, vx:(Math.random()-0.5)*18, vy:(Math.random()-0.5)*18, rot: Math.random()*Math.PI, vrot: (Math.random()-0.5)*0.8, alpha:1, c: colors[Math.floor(Math.random()*colors.length)], type: 'confetti'});
+                    for(let j=0; j<10; j++) tueParticles.push({x:env.x, y:env.y, vx:(Math.random()-0.5)*25, vy:(Math.random()-0.5)*25, rot: 0, vrot: 0, alpha:1, c: '#10B981', type: 'sparkle'});
+                    
+                    if (navigator.vibrate) navigator.vibrate(25);
+                    
+                    const wrap = document.getElementById('tue-wrap');
+                    wrap.style.transform = `translate(${(Math.random()-0.5)*10}px, ${(Math.random()-0.5)*10}px)`;
+                    setTimeout(() => wrap.style.transform = 'translate(0,0)', 50);
+                    tueCtx.fillStyle = 'rgba(255,255,255,0.5)'; tueCtx.fillRect(0,0,tueCanvas.width,tueCanvas.height); 
+                    
+                    tueEnvelopes.splice(i, 1); tueScore++; document.getElementById('stat-value').innerText = `${tueScore} | ${tueHighScore}`;
                 }
             }
         }
 
-        // --- 星期三 ---
+        // --- 星期三 (Wednesday) 優化的 JS 教學動畫與三階段關卡 ---
         function renderWednesday(scene) {
             if (wedState === 'setup') {
-                scene.innerHTML = `<div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center"><div class="flex items-center justify-center h-32 w-full gap-5 mb-2 bg-white rounded-xl shadow-inner relative"><div class="w-12 h-16 border-[4px] border-emerald-900 rounded-b-xl flex flex-col justify-end overflow-hidden"><div class="w-full bg-[#6F4E37]" style="animation: demoWedFill 4s infinite linear;"></div></div><div class="text-emerald-600 font-black text-3xl demo-timer w-24"></div></div><h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Wednesday Drip Drop</h2><p class="text-sm text-gray-600 font-bold leading-relaxed">長按注水，挑戰剛好 5 秒的平靜時刻！</p><button onclick="startWedGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始挑戰</button></div>`;
+                wedLevel = 1; 
+                scene.innerHTML = `<div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center mx-auto"><div class="flex items-center justify-center h-32 w-full gap-5 mb-2 bg-white rounded-xl shadow-inner relative"><div class="w-12 h-16 border-[4px] border-emerald-900 rounded-b-xl flex flex-col justify-end overflow-hidden"><div id="wed-demo-liquid" class="w-full bg-[#6F4E37]" style="height: 0%;"></div></div><div id="wed-demo-timer" class="text-emerald-600 font-black text-3xl w-24 tabular-nums">0.00s</div></div><h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Wednesday Drip Drop</h2><p class="text-sm font-bold">長按注水，挑戰精準在 <span class="text-emerald-600 text-lg">5、7、15</span> 秒停下，突破三階段極限！</p><button onclick="startWedGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始挑戰</button></div>`;
+                
+                // 完全修復：使用精準的 JS 計時器來驅動教學畫面
+                setTimeout(() => {
+                    const demoTimer = document.getElementById('wed-demo-timer');
+                    const demoLiquid = document.getElementById('wed-demo-liquid');
+                    if(!demoTimer || !demoLiquid) return;
+                    let start = performance.now();
+                    function wedDemoLoop() {
+                        if (currentDay !== 3 || wedState !== 'setup') return;
+                        let elapsed = (performance.now() - start) % 4000;
+                        if (elapsed < 3400) {
+                            demoTimer.innerText = ((elapsed / 3400) * 5).toFixed(2) + 's';
+                            demoLiquid.style.height = ((elapsed / 3400) * 100) + '%';
+                        } else {
+                            demoTimer.innerText = '5.00s';
+                            demoLiquid.style.height = '100%';
+                        }
+                        requestAnimationFrame(wedDemoLoop);
+                    }
+                    wedDemoLoop();
+                }, 50);
+
             } else {
-                scene.innerHTML = `<div class="w-full h-full flex flex-col items-center justify-between py-6 px-4"><div class="text-center"><p class="text-xl text-emerald-800 font-black animate-pulse">心如止水，專注當下</p></div><div class="relative w-32 h-40 border-[6px] border-emerald-900 rounded-b-3xl bg-white overflow-hidden shadow-lg flex flex-col justify-end"><div id="wed-liquid" class="w-full bg-[#6F4E37]" style="height: 0%;"></div></div><button id="wed-btn" class="w-full max-w-xs bg-emerald-600 text-white py-8 rounded-2xl font-black text-2xl shadow-xl touch-none">長按注水 (5秒)</button></div>`;
+                const currentTarget = wedTargets[wedLevel - 1];
+                scene.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center justify-center py-6">
+                        <div class="text-xl font-black text-emerald-900 mb-4 bg-white/60 px-4 py-1 rounded-full shadow-sm">🎯 目標: ${currentTarget}.0s</div>
+                        <div class="relative w-32 h-48 border-[6px] border-emerald-900 rounded-b-3xl bg-white overflow-hidden flex justify-end flex-col shadow-2xl">
+                            <div id="wed-liquid" class="w-full bg-[#6F4E37]" style="height: 0%;"></div>
+                        </div>
+                        <div id="wed-timer-display" class="text-6xl font-black text-emerald-800 mt-8 mb-6 tracking-widest tabular-nums drop-shadow-md">0.00s</div>
+                        <button id="wed-btn" class="w-full max-w-xs bg-emerald-600 text-white py-8 rounded-2xl font-black text-2xl shadow-xl touch-none active:scale-95 transition-transform">長按注水</button>
+                    </div>`;
                 const btn = document.getElementById('wed-btn');
-                btn.onpointerdown = (e) => { e.preventDefault(); wedIsPressing = true; wedStartTime = performance.now(); wedLoop(); btn.classList.replace('bg-emerald-600', 'bg-emerald-800'); };
+                btn.onpointerdown = (e) => { e.preventDefault(); wedIsPressing = true; wedStartTime = performance.now(); wedLoop(); };
                 btn.onpointerup = () => { if (wedIsPressing) finishWedGame(); };
             }
         }
@@ -495,93 +511,391 @@
         function wedLoop() {
             if (!wedIsPressing) return;
             const elapsed = performance.now() - wedStartTime;
-            document.getElementById('wed-liquid').style.height = `${Math.min(100, (elapsed / 5000) * 100)}%`;
-            if (navigator.vibrate && elapsed % 500 < 50) navigator.vibrate(10);
+            const targetTime = wedTargets[wedLevel - 1];
+            
+            document.getElementById('wed-liquid').style.height = `${Math.min(100, (elapsed / (targetTime * 1000)) * 100)}%`;
+            document.getElementById('wed-timer-display').innerText = (elapsed / 1000).toFixed(2) + 's';
+            
+            if (navigator.vibrate) {
+                const targetMs = targetTime * 1000;
+                if (elapsed > targetMs - 1500 && elapsed < targetMs + 500) {
+                    const diff = Math.abs(targetMs - elapsed);
+                    if (diff < 300) {
+                        if (Math.random() < 0.8) navigator.vibrate(20); 
+                    } else if (diff < 800) {
+                        if (Math.random() < 0.4) navigator.vibrate(10); 
+                    } else {
+                        if (Math.random() < 0.1) navigator.vibrate(5);  
+                    }
+                }
+            }
             wedAnimId = requestAnimationFrame(wedLoop);
         }
         function finishWedGame() {
-            wedIsPressing = false; const elapsed = performance.now() - wedStartTime;
-            const diff = Math.abs(5 - elapsed / 1000);
-            if (diff <= 0.25) { wedPerfectBrews++; localStorage.setItem('gapSense_wedScore', wedPerfectBrews); showModal("完美萃取！☕", `精準的 ${(elapsed/1000).toFixed(2)} 秒，心境平和。`, "再來一杯", () => { wedState='setup'; render(); }); }
-            else showModal(elapsed < 5000 ? "操之過急" : "溢出邊界", `你注水了 ${(elapsed/1000).toFixed(2)} 秒，專注在節奏上。`, "重試", () => { wedState='setup'; render(); });
-        }
-
-        // --- 星期四 ---
-        function renderThursday(scene) {
-            if (thuState === 'setup') {
-                scene.innerHTML = `<div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center"><div class="flex items-center justify-center h-32 w-full mb-2 bg-white rounded-xl shadow-inner relative"><div class="w-10 h-10 rounded-full bg-emerald-500 animate-ping"></div></div><h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Thursday Sensory</h2><p class="text-sm text-gray-600 font-bold leading-relaxed">感官降噪：Look, Listen, Breathe.</p><button onclick="startThuGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始練習</button></div>`;
-            } else {
-                const steps = [{ t: "Look", d: "尋找視野中 3 個綠色的物體", e: "🌿" }, { t: "Listen", d: "聽辨一個遠方的聲音", e: "👂" }, { t: "Breathe", d: "跟著節奏深呼吸三次", e: "💨" }];
-                const s = steps[thuStep];
-                scene.innerHTML = `<div class="glass-card p-10 flex flex-col items-center text-center gap-8 w-80"><div class="text-7xl animate-bounce">${s.e}</div><h2 class="font-black text-2xl text-emerald-800 uppercase">${s.t}</h2><p class="text-lg font-semibold text-gray-600">${s.d}</p><button onclick="nextThuStep()" class="w-full bg-emerald-600 text-white py-5 rounded-xl font-black text-xl shadow-lg mt-4">完成</button></div>`;
+            wedIsPressing = false; const elapsed = (performance.now() - wedStartTime) / 1000;
+            const targetTime = wedTargets[wedLevel - 1];
+            const diff = Math.abs(targetTime - elapsed);
+            
+            if (diff <= 0.3) { 
+                if (wedLevel >= 3) {
+                    wedPerfectBrews++; localStorage.setItem('gapSense_wedScore', wedPerfectBrews);
+                    showModal("神乎其技！", `你精準突破了全部三個時間挑戰，時間感無可挑剔！`, "領取最高獎勵", () => { wedState='setup'; wedLevel=1; render(); }, 30);
+                } else {
+                    showModal("完美命中！", `精準停在 ${elapsed.toFixed(2)} 秒，準備進入下一階段！`, "領取獎勵並繼續", () => { wedLevel++; render(); }, 10);
+                }
+            }
+            else {
+                const reward = diff <= 1 ? 8 : 4; 
+                showModal("差一點點", `你的時間是 ${elapsed.toFixed(2)} 秒，目標是 ${targetTime.toFixed(1)} 秒。`, "領取安慰獎並重試", () => { wedState='setup'; wedLevel=1; render(); }, reward); 
             }
         }
-        function startThuGame() { startCountdown(() => { thuState = 'playing'; thuStep = 0; render(); }); }
-        function nextThuStep() { if (thuStep < 2) { thuStep++; render(); } else showModal("平靜達成", "精神已煥發，隨時可回歸工作。", "完成", () => { thuState = 'setup'; render(); }); }
 
-        // --- 星期五 ---
+        // --- 星期四 (Thursday) ---
+        function renderThursday(scene) {
+            if (thuState === 'setup') {
+                scene.innerHTML = `<div class="glass-card p-8 flex flex-col items-center gap-4 w-80 text-center mx-auto"><div class="w-32 h-32 flex items-center justify-center bg-white rounded-full shadow-inner mb-2 border-4 border-emerald-100" style="animation: demoThuCamera 2s infinite;"><span class="text-6xl">📸🌿</span></div><h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Thursday Sensory</h2><p class="text-sm font-bold text-gray-600">重啟感官：透過相機拍攝<br>尋找周圍 <span class="text-emerald-600 text-lg">3</span> 件綠色物品！</p><button onclick="startThuGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始挑戰</button></div>`;
+            } else {
+                scene.innerHTML = `<div class="flex flex-col items-center justify-center w-full h-full gap-8 px-4"><div class="text-center"><h3 class="text-2xl font-black text-emerald-900 tracking-wider mb-2">尋找綠色物品</h3><div class="text-6xl font-black text-emerald-500 drop-shadow-md" id="thu-score-display">${thuScore} / 3</div></div><div class="relative w-40 h-40"><input type="file" id="thu-camera" accept="image/*" capture="environment" class="hidden"><button onclick="document.getElementById('thu-camera').click()" class="w-full h-full bg-emerald-50 rounded-full border-[6px] border-emerald-500 text-6xl flex items-center justify-center shadow-xl active:scale-90 transition-transform" id="thu-snap-btn">📸</button><div id="thu-loading" class="absolute inset-0 bg-white/90 rounded-full flex flex-col items-center justify-center hidden z-10"><div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-2"></div></div></div><p class="text-sm text-gray-700 font-bold px-4 py-2 bg-white/60 rounded-lg text-center shadow-sm" id="thu-feedback">點擊相機，拍下周遭的綠色物體給系統識別。</p></div>`;
+                document.getElementById('thu-camera').onchange = handleThuUpload;
+            }
+        }
+        function startThuGame() { startCountdown(() => { thuState = 'playing'; thuScore = 0; render(); }); }
+        function handleThuUpload(e) {
+            const file = e.target.files[0]; if(!file) return;
+            const loading = document.getElementById('thu-loading'); const feedback = document.getElementById('thu-feedback');
+            loading.classList.remove('hidden'); feedback.innerText = "正在用 AI 分析圖片中...";
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const base64 = ev.target.result;
+                const result = await callGemini("Is there a noticeably green object in this image? You must respond strictly with only 'YES' or 'NO'.", "You are a color and object identifier.", base64);
+                loading.classList.add('hidden');
+                if (result.toUpperCase().includes('YES')) {
+                    thuScore++; if (navigator.vibrate) navigator.vibrate([30, 30]);
+                    if (thuScore >= 3) {
+                        showModal("感官大開！", "成功找齊 3 件綠色物品，重啟了專注力！", "領取獎勵", () => { thuState = 'setup'; render(); }, 20);
+                    } else {
+                        feedback.innerText = "太棒了！找到一個綠色物品，繼續尋找！"; document.getElementById('thu-score-display').innerText = `${thuScore} / 3`; document.getElementById('stat-value').innerText = `${thuScore} / 3`;
+                    }
+                } else {
+                    feedback.innerText = "系統沒有辨識到綠色物品，請換個角度或物品！"; if (navigator.vibrate) navigator.vibrate(200);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- 星期五 (Friday) 氣球改為正圓形、難度下調 ---
         function renderFriday(scene) {
             if (friState === 'setup') {
                 scene.innerHTML = `
-                    <div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center">
-                        <div class="flex items-center justify-center h-32 w-full relative mb-2 bg-white rounded-xl shadow-inner overflow-hidden">
-                            <div class="w-14 h-14 rounded-full bg-emerald-400 border-[3px] border-emerald-600 shadow-md" style="animation: demoFriPumpSlow 3s infinite;"></div>
-                            <div class="absolute text-5xl" style="animation: demoFriClickSlow 3s infinite; margin-top: 50px; margin-left: 50px;">👆</div>
+                    <div class="glass-card p-8 flex flex-col items-center gap-4 w-80 text-center mx-auto">
+                        <div class="flex items-center justify-center h-28 w-full relative mb-2 bg-white rounded-xl shadow-inner overflow-hidden border border-gray-100">
+                            <div class="w-12 h-12 rounded-full bg-emerald-400 border-[3px] border-emerald-600 shadow-md" style="animation: demoFriPumpSlow 3s infinite;"></div>
+                            <div class="absolute text-4xl" style="animation: demoFriClickSlow 3s infinite; margin-top: 40px; margin-left: 40px;">👆</div>
                         </div>
-                        <h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Friday TGIF Pop</h2>
-                        <p class="text-sm text-gray-600 font-bold leading-relaxed">瘋狂點擊，炸掉這一週所有的疲憊！</p>
-                        <button onclick="startFriGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">點擊爆發</button>
+                        <h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Friday Burst</h2>
+                        <div id="fri-upload" class="w-full h-24 rounded-xl border-2 border-dashed border-emerald-400 bg-emerald-50 flex items-center justify-center cursor-pointer overflow-hidden relative shadow-inner">
+                            ${friTargetImg ? `<img src="${friTargetImg}" class="max-w-full max-h-full object-contain">` : `<div class="text-center"><span class="text-3xl block mb-1">🎈</span><span class="text-emerald-500 font-bold text-xs uppercase">點擊上傳壓力來源</span></div>`}
+                        </div>
+                        <input type="file" id="fri-file" class="hidden" accept="image/*">
+                        <p class="text-xs text-gray-500 font-bold">必須先封裝壓力，才能開始充氣</p>
+                        ${friTargetImg ? `<button onclick="startFriGame()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-lg animate-pulse shadow-lg mt-1">開始充氣</button>` : ''}
+                    </div>
+                `;
+                document.getElementById('fri-upload').onclick = () => document.getElementById('fri-file').click();
+                document.getElementById('fri-file').onchange = (e) => { const reader = new FileReader(); reader.onload = (ev) => { friTargetImg = ev.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); };
+            } else {
+                scene.innerHTML = `
+                    <div class="flex flex-col items-center gap-10 touch-none w-full">
+                        <div id="fri-balloon-wrap" class="w-40 h-40 relative transition-transform duration-75 cursor-pointer mt-10">
+                            <!-- 改為純正的 rounded-full 實現正圓氣球 -->
+                            <div id="fri-balloon" class="w-full h-full rounded-full bg-emerald-400 flex items-center justify-center overflow-hidden shadow-inner border-[6px] border-emerald-300">
+                                ${friTargetImg ? `<img src="${friTargetImg}" class="w-full h-full object-cover mix-blend-multiply opacity-80">` : ''}
+                            </div>
+                            <div id="fri-knot" class="balloon-knot"></div>
+                        </div>
+                        <div class="w-64 h-4 bg-white rounded-full overflow-hidden border-2 border-emerald-200 mt-4">
+                            <div id="fri-bar" class="h-full bg-emerald-500 transition-all duration-75" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm font-black text-emerald-800 uppercase animate-bounce">狂點螢幕充爆它！</p>
+                        <button id="fri-pump-btn" class="w-64 py-6 bg-emerald-600 text-white font-black rounded-2xl shadow-xl active:scale-95">充氣！</button>
+                    </div>
+                `;
+                
+                const pump = (e) => {
+                    e.preventDefault(); if (friIsExploded) return;
+                    friPopProgress = Math.min(100, friPopProgress + 15); 
+                    if (navigator.vibrate) navigator.vibrate(15);
+                };
+                document.getElementById('fri-pump-btn').onpointerdown = pump;
+                document.getElementById('fri-balloon-wrap').onpointerdown = pump;
+                friLoop();
+            }
+        }
+        function startFriGame() { startCountdown(() => { friState = 'playing'; friPopProgress = 0; friIsExploded = false; render(); }); }
+        function friLoop() {
+            if (currentDay !== 5 || friState !== 'playing') return;
+            if (friPopProgress > 0 && !friIsExploded) {
+                friPopProgress -= 0.15; 
+                const balloon = document.getElementById('fri-balloon-wrap');
+                const balloonInner = document.getElementById('fri-balloon');
+                const knot = document.getElementById('fri-knot');
+                const bar = document.getElementById('fri-bar');
+                if (balloon && bar) {
+                    const scale = 1 + (friPopProgress / 100) * 1.8;
+                    balloon.style.transform = `scale(${scale})`;
+                    bar.style.width = friPopProgress + '%';
+                    
+                    if(friPopProgress > 80) { balloonInner.style.backgroundColor = '#EF4444'; balloonInner.style.borderColor = '#FCA5A5'; knot.style.borderBottomColor = '#EF4444'; }
+                    else { balloonInner.style.backgroundColor = '#34D399'; balloonInner.style.borderColor = '#6EE7B7'; knot.style.borderBottomColor = '#34D399'; }
+
+                    if (friPopProgress >= 100) {
+                        friIsExploded = true;
+                        balloon.style.display = 'none'; 
+                        if(navigator.vibrate) navigator.vibrate([100,50,100]);
+                        showModal("BOOM! 🎉", "壓力徹底炸裂！週末愉快！", "領取獎勵", () => { friState='setup'; render(); }, 18);
+                    }
+                }
+            }
+            document.getElementById('stat-value').innerText = Math.floor(friPopProgress) + "%";
+            friAnimId = requestAnimationFrame(friLoop);
+        }
+
+        // --- 星期六 (Saturday) ---
+        function renderSaturday(scene) {
+            if (satState === 'setup') {
+                scene.innerHTML = `
+                    <div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center mx-auto">
+                        <div class="flex items-center justify-center h-32 w-full relative bg-gray-300 rounded-xl shadow-inner overflow-hidden border border-gray-400">
+                            <div class="absolute w-16 h-16 z-0 flex items-center justify-center"><img src="${LIFE_COIN_SRC}" class="w-full h-full object-contain drop-shadow-md"></div>
+                            <div class="absolute inset-0 bg-gray-400 z-10 opacity-90" style="animation: demoSatCloud 3s infinite;"></div>
+                            <div class="absolute text-4xl z-20" style="animation: demoSatSwipe 3s infinite;">👆</div>
+                        </div>
+                        <h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Saturday Cloud</h2>
+                        <p class="text-sm font-bold text-gray-600 leading-relaxed">輕拂螢幕吹散雲霧，<br>尋找隱藏的週末 Life Coins！</p>
+                        <button onclick="startSatGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始尋寶</button>
                     </div>
                 `;
             } else {
                 scene.innerHTML = `
-                    <div class="flex flex-col items-center gap-10">
-                        <div id="pump-target" class="cursor-pointer transition-all duration-100 transform active:scale-90" style="transform: scale(1.0);">
-                            <svg width="200" height="200" viewBox="0 0 100 100">
-                                <defs>
-                                    <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                                        <stop offset="0%" style="stop-color:#34D399;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#10B981;stop-opacity:1" />
-                                    </radialGradient>
-                                </defs>
-                                <circle cx="50" cy="50" r="40" fill="url(#grad1)" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.15))" />
-                                <path d="M35 50 L65 50 M50 35 L50 65" stroke="white" stroke-width="4" stroke-linecap="round" />
-                            </svg>
-                        </div>
-                        <div class="w-64 h-3 bg-emerald-100 rounded-full overflow-hidden shadow-inner">
-                            <div id="fri-progress-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                        <p class="font-black text-emerald-900 tracking-tighter text-xl uppercase italic">Keep Pumping!</p>
+                    <div class="w-full h-full relative overflow-hidden bg-emerald-50 touch-none rounded-xl border-2 border-gray-200">
+                        <div id="sat-coins-layer" class="absolute inset-0 z-0 bg-gradient-to-b from-blue-200 to-emerald-100"></div>
+                        <canvas id="sat-canvas" class="absolute inset-0 w-full h-full z-10 cursor-crosshair mix-blend-normal"></canvas>
                     </div>
                 `;
-                const target = document.getElementById('pump-target');
-                target.onpointerdown = (e) => {
-                    e.preventDefault(); if (friIsExploded) return;
-                    friPopProgress = Math.min(100, friPopProgress + 5);
-                    const scale = 1 + (friPopProgress / 100) * 2.2;
-                    target.style.transform = `scale(${scale})`;
-                    document.getElementById('fri-progress-bar').style.width = `${friPopProgress}%`;
-                    if (navigator.vibrate) navigator.vibrate(25);
-                    if (friPopProgress >= 100) explodeFri();
-                    updateFriUI();
-                };
+                initSatGame(scene);
             }
         }
-        function startFriGame() { startCountdown(() => { friState = 'playing'; friPopProgress = 0; friIsExploded = false; render(); }); }
-        function updateFriUI() { document.getElementById('stat-value').innerText = Math.floor(friPopProgress) + "%"; }
-        async function explodeFri() {
-            friIsExploded = true; const target = document.getElementById('pump-target');
-            target.style.transform = 'scale(15)'; target.style.opacity = '0'; target.style.transition = 'all 0.3s ease-out';
-            const quote = await callGemini("User exploded stress on a Friday. One witty, satisfying zen quote about freedom and weekend.");
-            setTimeout(() => { showModal("壓力瓦解！🎉", quote, "迎接週末", () => { friState = 'setup'; render(); }); }, 400);
+
+        function startSatGame() {
+            startCountdown(() => {
+                satState = 'playing'; satCoinsCollected = 0; satLastPos = null;
+                satTotalCoins = Math.floor(Math.random() * 6) + 5; 
+                satCoins = []; satWindParticles = []; render();
+            });
         }
 
-        function showModal(title, content, btnText, callback) {
+        function initSatGame(scene) {
+            satCanvas = document.getElementById('sat-canvas'); satCtx = satCanvas.getContext('2d');
+            const container = satCanvas.parentElement; satCanvas.width = container.clientWidth; satCanvas.height = container.clientHeight;
+
+            satCtx.fillStyle = '#6b7280'; satCtx.fillRect(0, 0, satCanvas.width, satCanvas.height);
+            for(let i=0; i<50; i++) {
+                satCtx.beginPath(); satCtx.arc(Math.random() * satCanvas.width, Math.random() * satCanvas.height, Math.random() * 80 + 40, 0, Math.PI * 2);
+                satCtx.fillStyle = `rgba(156, 163, 175, ${Math.random() * 0.5 + 0.5})`; satCtx.fill();
+            }
+            satCanvas.style.filter = "blur(10px) contrast(1.1)"; 
+
+            const layer = document.getElementById('sat-coins-layer');
+            for(let i=0; i<satTotalCoins; i++) {
+                const x = 40 + Math.random() * (satCanvas.width - 80); const y = 40 + Math.random() * (satCanvas.height - 80);
+                const coinContainer = document.createElement('div');
+                coinContainer.className = 'absolute w-16 h-16 transition-all duration-500 transform scale-50 opacity-0 drop-shadow-xl flex items-center justify-center pointer-events-none';
+                coinContainer.style.left = `${x - 32}px`; coinContainer.style.top = `${y - 32}px`;
+                const coin = document.createElement('img');
+                coin.src = LIFE_COIN_SRC;
+                coin.className = 'w-full h-full object-contain';
+                coinContainer.appendChild(coin);
+                layer.appendChild(coinContainer);
+                satCoins.push({ x, y, revealed: false, el: coinContainer });
+            }
+
+            satCanvas.onpointerdown = (e) => { satIsSwiping = true; const rect = satCanvas.getBoundingClientRect(); satLastPos = {x: e.clientX-rect.left, y: e.clientY-rect.top}; satCanvas.setPointerCapture(e.pointerId); eraseCloud(e); };
+            satCanvas.onpointermove = (e) => { if (satIsSwiping) eraseCloud(e); };
+            satCanvas.onpointerup = () => { satIsSwiping = false; satLastPos = null; };
+            satLoop();
+        }
+
+        function eraseCloud(e) {
+            const rect = satCanvas.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+            
+            if (satLastPos) {
+                const dx = x - satLastPos.x; const dy = y - satLastPos.y;
+                const speed = Math.hypot(dx, dy);
+                if (speed > 5) {
+                    for(let i=0; i<4; i++) {
+                        satWindParticles.push({
+                            x: x + (Math.random()-0.5)*30, y: y + (Math.random()-0.5)*30,
+                            vx: dx * 0.15 + (Math.random()-0.5)*2, vy: dy * 0.15 + (Math.random()-0.5)*2,
+                            life: 1.0, size: Math.random() * 30 + 30
+                        });
+                    }
+                }
+            }
+            satLastPos = {x, y};
+            
+            satCtx.globalCompositeOperation = 'destination-out';
+            const radius = 70;
+            const grad = satCtx.createRadialGradient(x, y, 0, x, y, radius);
+            grad.addColorStop(0, 'rgba(0,0,0,1)'); grad.addColorStop(0.5, 'rgba(0,0,0,0.8)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+            satCtx.beginPath(); satCtx.arc(x, y, radius, 0, Math.PI * 2); satCtx.fillStyle = grad; satCtx.fill();
+            satCtx.globalCompositeOperation = 'source-over';
+
+            satCoins.forEach(c => {
+                if (!c.revealed && Math.hypot(c.x - x, c.y - y) < radius - 20) {
+                    c.revealed = true;
+                    c.el.classList.remove('scale-50', 'opacity-0'); c.el.classList.add('scale-100', 'opacity-100', 'animate-bounce');
+                    satCoinsCollected++;
+                    document.getElementById('stat-value').innerText = `${satCoinsCollected} / ${satTotalCoins}`;
+                    if(navigator.vibrate) navigator.vibrate(20);
+                    
+                    if (satCoinsCollected >= satTotalCoins) {
+                        setTimeout(() => {
+                            showModal("大豐收！🎉", `你撥開雲霧，找到了全部 ${satTotalCoins} 枚金幣！`, "收入口袋", () => { satState = 'setup'; render(); }, satTotalCoins);
+                        }, 1000);
+                    }
+                }
+            });
+        }
+        
+        function satLoop() {
+            if(currentDay !== 6 || satState !== 'playing') return;
+            satCtx.globalCompositeOperation = 'source-over';
+            for(let i=satWindParticles.length-1; i>=0; i--) {
+                let p = satWindParticles[i];
+                p.x += p.vx; p.y += p.vy; p.life -= 0.05; p.size += 1;
+                if(p.life <= 0) { satWindParticles.splice(i, 1); continue; }
+                satCtx.beginPath(); satCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                satCtx.fillStyle = `rgba(229, 231, 235, ${p.life * 0.2})`; 
+                satCtx.fill();
+            }
+            requestAnimationFrame(satLoop);
+        }
+
+        // --- 星期日 (Sunday) ---
+        function renderSunday(scene) {
+            if (sunState === 'setup') {
+                scene.innerHTML = `
+                    <div class="glass-card p-8 flex flex-col items-center gap-4 w-80 text-center mx-auto">
+                        <div class="h-32 w-full relative bg-blue-50 rounded-xl overflow-hidden border-2 border-gray-200">
+                            <div class="absolute w-12 h-12 flex items-center justify-center" style="animation: demoSunCoin 3s infinite linear;">
+                                <img src="${LIFE_COIN_SRC}" class="w-full h-full object-contain">
+                            </div>
+                            <div class="absolute bottom-2 w-16 h-8 bg-orange-400 rounded-b-xl rounded-t-sm" style="animation: demoSunBasket 3s infinite ease-in-out;"></div>
+                        </div>
+                        <h2 class="font-black text-lg uppercase text-emerald-800 tracking-widest">Sunday Slumber</h2>
+                        <p class="text-sm font-bold text-gray-600 leading-relaxed">最低難度，極致放鬆。<br>慢慢滑動籃子接住 Life Coins。</p>
+                        <button onclick="startSunGame()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xl shadow-lg mt-2">開始收集</button>
+                    </div>
+                `;
+            } else {
+                 scene.innerHTML = `
+                    <canvas id="sun-canvas" class="w-full h-full absolute inset-0 z-20 touch-none rounded-xl bg-gradient-to-b from-blue-100 to-indigo-50"></canvas>
+                    <div id="sun-lives" class="absolute top-4 right-4 text-2xl z-30 tracking-widest drop-shadow-md">❤️❤️❤️</div>
+                 `;
+                 sunCanvas = document.getElementById('sun-canvas'); sunCtx = sunCanvas.getContext('2d');
+                 sunCanvas.width = scene.clientWidth; sunCanvas.height = scene.clientHeight;
+                 sunBasketX = sunCanvas.width / 2;
+                 
+                 sunCanvas.onpointermove = (e) => { const rect = sunCanvas.getBoundingClientRect(); sunBasketX = e.clientX - rect.left; };
+                 sunCanvas.ontouchmove = (e) => { e.preventDefault(); const rect = sunCanvas.getBoundingClientRect(); sunBasketX = e.touches[0].clientX - rect.left; };
+                 
+                 const coinImg = new Image();
+                 coinImg.onload = () => { sunState = 'playing'; sunLoop(coinImg); };
+                 coinImg.onerror = () => { console.error("Coin image failed to load, starting game anyway"); sunState = 'playing'; sunLoop(coinImg); };
+                 coinImg.src = LIFE_COIN_SRC;
+            }
+        }
+        function startSunGame() { startCountdown(() => { sunScore = 0; sunLives = 3; sunCoins = []; sunFrameCount = 0; render(); }); }
+        
+        function sunLoop(coinImg) {
+            if(currentDay !== 7 || sunState !== 'playing') return;
+            sunFrameCount++;
+            
+            const spawnRate = Math.max(50, 180 - Math.floor(sunScore / 2) * 8);
+            if(sunFrameCount % spawnRate === 0) {
+                sunCoins.push({
+                    x: 30 + Math.random() * (sunCanvas.width - 60),
+                    y: -30,
+                    vy: 1.5 + (sunScore * 0.05), 
+                    rot: 0
+                });
+            }
+            
+            sunCtx.clearRect(0, 0, sunCanvas.width, sunCanvas.height);
+            
+            const bw = 80, bh = 40;
+            const bx = Math.max(0, Math.min(sunCanvas.width - bw, sunBasketX - bw/2));
+            const by = sunCanvas.height - 60;
+            
+            sunCtx.fillStyle = '#fb923c';
+            sunCtx.beginPath(); sunCtx.roundRect(bx, by, bw, bh, [5, 5, 20, 20]); sunCtx.fill();
+            sunCtx.strokeStyle = '#ea580c'; sunCtx.lineWidth = 4; sunCtx.stroke();
+            
+            for(let i = sunCoins.length - 1; i >= 0; i--) {
+                let c = sunCoins[i]; c.y += c.vy; c.rot += 0.02;
+                
+                sunCtx.save(); sunCtx.translate(c.x, c.y); sunCtx.rotate(c.rot);
+                if (coinImg.complete && coinImg.naturalWidth !== 0) {
+                    sunCtx.drawImage(coinImg, -30, -30, 60, 60); 
+                }
+                sunCtx.restore();
+                
+                if(c.y + 20 > by && c.y - 20 < by + bh && c.x > bx - 20 && c.x < bx + bw + 20) {
+                    sunScore++; sunCoins.splice(i, 1);
+                    if(navigator.vibrate) navigator.vibrate(10);
+                    document.getElementById('stat-value').innerText = sunScore;
+                    continue;
+                }
+                
+                if(c.y > sunCanvas.height + 30) {
+                    sunCoins.splice(i, 1); sunLives--;
+                    document.getElementById('sun-lives').innerText = '❤️'.repeat(sunLives);
+                    if(navigator.vibrate) navigator.vibrate([30, 30]);
+                    if(sunLives <= 0) {
+                        sunState = 'gameover'; 
+                        const reward = Math.min(20, Math.max(8, Math.floor(sunScore / 2)));
+                        showModal("睡覺時間", `收集了 ${sunScore} 枚硬幣，準備好迎接新的一週了！`, "領取獎勵", () => { sunState = 'setup'; render(); }, reward);
+                    }
+                }
+            }
+            sunAnimId = requestAnimationFrame(() => sunLoop(coinImg));
+        }
+
+        // --- 全域彈窗與獎勵結算 ---
+        function showModal(title, content, btnText, callback, rewardCoins = 0) {
             const modal = document.getElementById('game-modal');
+            const rewardDiv = document.getElementById('modal-reward');
+            const btn = document.getElementById('modal-btn');
+            
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-content').innerHTML = content;
-            const btn = document.getElementById('modal-btn');
-            btn.innerText = btnText; btn.onclick = () => { modal.style.display = 'none'; callback(); };
+            
+            if (rewardCoins > 0) {
+                rewardDiv.style.display = 'flex';
+                document.getElementById('modal-coin-amount').innerText = `+${rewardCoins}`;
+                btn.onclick = () => {
+                    const rect = btn.getBoundingClientRect();
+                    animateCoinsToWallet(rewardCoins, rect);
+                    addLifeCoins(rewardCoins);
+                    modal.style.display = 'none';
+                    callback();
+                };
+            } else {
+                rewardDiv.style.display = 'none';
+                btn.onclick = () => { modal.style.display = 'none'; callback(); };
+            }
+            
+            btn.innerText = btnText;
             modal.style.display = 'flex';
         }
 
