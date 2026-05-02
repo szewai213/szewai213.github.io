@@ -196,20 +196,27 @@
             imgEl.src = sources[0];
         }
 
-        setCoinImage(document.getElementById('wallet-coin-icon'));
-        setCoinImage(document.getElementById('modal-coin-icon'));
+        const walletCoinIcon = document.getElementById('wallet-coin-icon');
+        if (walletCoinIcon) setCoinImage(walletCoinIcon);
+        
+        const modalCoinIcon = document.getElementById('modal-coin-icon');
+        if (modalCoinIcon) setCoinImage(modalCoinIcon);
         
         let totalLifeCoins = parseInt(localStorage.getItem('gapSense_lifeCoins')) || 0;
-        document.getElementById('global-coins').innerText = totalLifeCoins;
+        const globalCoinsEl = document.getElementById('global-coins');
+        if (globalCoinsEl) globalCoinsEl.innerText = totalLifeCoins;
 
         function addLifeCoins(amount) {
             totalLifeCoins += amount;
             localStorage.setItem('gapSense_lifeCoins', totalLifeCoins);
-            document.getElementById('global-coins').innerText = totalLifeCoins;
+            const coinsEl = document.getElementById('global-coins');
+            if (coinsEl) coinsEl.innerText = totalLifeCoins;
         }
 
         function animateCoinsToWallet(amount, startRect) {
-            const walletRect = document.getElementById('wallet-ui').getBoundingClientRect();
+            const walletUi = document.getElementById('wallet-ui');
+            if (!walletUi) return;
+            const walletRect = walletUi.getBoundingClientRect();
             for(let i=0; i<Math.min(amount, 10); i++) {
                 setTimeout(() => {
                     const coin = document.createElement('img');
@@ -254,16 +261,26 @@
         let sunAnimId = null, sunCanvas, sunCtx, sunState = 'setup', sunScore = 0, sunLives = 3, sunCoins = [], sunBasketX = 0, sunFrameCount = 0;
 
         function startCountdown(callback) {
-            const overlay = document.getElementById('countdown-overlay'); const text = document.getElementById('countdown-text');
-            overlay.style.display = 'flex'; let count = 3;
-            const animateText = (str) => { text.innerText = str; text.style.animation = 'none'; void text.offsetWidth; text.style.animation = 'countDownPop 1s ease-in-out forwards'; };
+            const overlay = document.getElementById('countdown-overlay'); 
+            const text = document.getElementById('countdown-text');
+            if(overlay) overlay.style.display = 'flex'; 
+            let count = 3;
+            const animateText = (str) => { 
+                if(text) {
+                    text.innerText = str; text.style.animation = 'none'; void text.offsetWidth; text.style.animation = 'countDownPop 1s ease-in-out forwards'; 
+                }
+            };
             animateText(count);
             if(countdownTimer) clearInterval(countdownTimer);
             countdownTimer = setInterval(() => {
                 count--;
                 if (count > 0) animateText(count);
                 else if (count === 0) animateText("GO!");
-                else { clearInterval(countdownTimer); overlay.style.display = 'none'; callback(); }
+                else { 
+                    clearInterval(countdownTimer); 
+                    if(overlay) overlay.style.display = 'none'; 
+                    callback(); 
+                }
             }, 1000);
         }
 
@@ -271,7 +288,8 @@
             currentDay = day;
             cancelAnimationFrame(monAnimId); cancelAnimationFrame(tueAnimId); cancelAnimationFrame(wedAnimId); cancelAnimationFrame(friAnimId); cancelAnimationFrame(sunAnimId);
             if (countdownTimer) clearInterval(countdownTimer);
-            document.getElementById('countdown-overlay').style.display = 'none';
+            const overlay = document.getElementById('countdown-overlay');
+            if (overlay) overlay.style.display = 'none';
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             const activeBtn = document.getElementById(`btn-${day}`); if(activeBtn) activeBtn.classList.add('active');
             monState = 'setup'; tueState = 'setup'; wedState = 'setup'; thuState = 'setup'; friState = 'setup'; satState = 'setup'; sunState = 'setup';
@@ -279,7 +297,11 @@
         }
 
         function render() {
-            const scene = document.getElementById('game-scene'); const statValue = document.getElementById('stat-value'); const statLabel = document.getElementById('stat-label');
+            const scene = document.getElementById('game-scene'); 
+            const statValue = document.getElementById('stat-value'); 
+            const statLabel = document.getElementById('stat-label');
+            if (!scene || !statValue || !statLabel) return;
+            
             scene.innerHTML = '';
             if (currentDay === 1) { renderMonday(scene); statLabel.innerText = "STAGE"; statValue.innerText = monState === 'setup' ? "Ready" : `${monLevel} / 3`; } 
             else if (currentDay === 2) { renderTuesday(scene); statLabel.innerText = tueState === 'setup' ? "STAGE" : "TIME | COMBO"; statValue.innerText = tueState === 'setup' ? `${tueLevel} / 3` : `${tueTimeLeft}s | x${tueCombo}`; } 
@@ -294,18 +316,25 @@
         function renderMonday(scene) {
             if (monState === 'setup') {
                 scene.innerHTML = `<div class="glass-card p-5 flex flex-col items-center gap-3 w-72 md:w-80 text-center mx-auto scale-95 origin-center"><div class="flex items-center justify-center h-28 w-full mb-1 bg-white rounded-xl shadow-inner overflow-hidden"><div class="relative w-[70px] h-[70px] mt-[-10px] flex items-center justify-center"><div class="w-full h-full rounded-full border-[4px] border-gray-200 relative z-10 bg-white" style="animation: demoMonRotation 2s linear infinite;"><div class="absolute w-1.5 top-[100%] left-[50%] ml-[-3px]" style="transform-origin: 50% -35px; animation: demoMonStuckAppear 2s infinite linear;"><div class="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[8px] border-b-gray-700 mx-auto"></div><div class="w-1 h-5 bg-emerald-500 mx-auto rounded-sm"></div></div></div><div class="absolute w-1.5 top-[100%] left-[50%] ml-[-3px] z-20" style="animation: demoMonShooting 2s infinite linear;"><div class="w-1 h-5 bg-emerald-600 mx-auto rounded-sm shadow-md"></div></div></div></div><h2 class="font-black text-base md:text-lg uppercase text-emerald-800 tracking-widest">Monday Pen Shot</h2><p class="text-[11px] md:text-xs font-bold text-gray-500">Clear 3 stages for max rewards.</p><div class="w-full flex flex-col gap-2 mt-1"><div id="mon-upload" class="w-full h-20 rounded-xl border-2 border-dashed border-emerald-400 bg-white flex items-center justify-center cursor-pointer overflow-hidden">${monBossImg ? `<img src="${monBossImg}" class="max-w-full max-h-full object-contain">` : `<span class="text-emerald-500 font-bold text-[10px] uppercase">Tap to Upload Stress</span>`}</div><input type="file" id="mon-file" class="hidden" accept="image/*">${monBossImg ? `<button onclick="monLevel=1; startMonGame()" class="bg-emerald-600 text-white py-2.5 rounded-xl font-black text-base animate-bounce">Crush It!</button>` : ''}</div></div>`;
-                document.getElementById('mon-upload').onclick = () => document.getElementById('mon-file').click();
-                document.getElementById('mon-file').onchange = (e) => { const reader = new FileReader(); reader.onload = (ev) => { monBossImg = ev.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); };
+                const uploadBtn = document.getElementById('mon-upload');
+                const fileInput = document.getElementById('mon-file');
+                if (uploadBtn && fileInput) {
+                    uploadBtn.onclick = () => fileInput.click();
+                    fileInput.onchange = (e) => { const reader = new FileReader(); reader.onload = (ev) => { monBossImg = ev.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); };
+                }
             } else {
-                scene.innerHTML = `<div id="mon-play-area" class="w-full h-full relative flex items-center justify-center"><div id="mon-stats" class="absolute top-4 left-4 text-xs md:text-sm font-black uppercase text-emerald-900 bg-white/60 px-3 py-1 rounded-full shadow-sm">🎯 ${monPensLeft} | ❤️ <span id="mon-lives-display">${monLives}</span></div><div class="relative w-[140px] h-[140px] md:w-[160px] md:h-[160px]" id="mon-target-wrap"><div id="mon-target-circle" class="target-circle overflow-hidden w-full h-full">${monBossImg ? `<img src="${monBossImg}" class="w-full h-full object-cover">` : ''}</div><div id="mon-stuck-layer" class="absolute inset-0 pointer-events-none"></div><div id="mon-shooter" class="shooter-pen"><div class="pen-tip"></div><div class="pen-body"></div></div></div></div>`;
+                scene.innerHTML = `<div id="mon-play-area" class="w-full h-full relative flex items-center justify-center"><div id="mon-stats" class="absolute top-4 left-4 text-xs md:text-sm font-black uppercase text-emerald-900 bg-white/60 px-3 py-1 rounded-full shadow-sm">🎯 <span id="mon-pens-left">${monPensLeft}</span> | ❤️ <span id="mon-lives-display">${monLives}</span></div><div class="relative w-[140px] h-[140px] md:w-[160px] md:h-[160px]" id="mon-target-wrap"><div id="mon-target-circle" class="target-circle overflow-hidden w-full h-full">${monBossImg ? `<img src="${monBossImg}" class="w-full h-full object-cover">` : ''}</div><div id="mon-stuck-layer" class="absolute inset-0 pointer-events-none"></div><div id="mon-shooter" class="shooter-pen"><div class="pen-tip"></div><div class="pen-body"></div></div></div></div>`;
                 monAnimId = requestAnimationFrame(monLoop);
-                document.getElementById('mon-play-area').onpointerdown = (e) => { e.preventDefault(); shootMonPen(); };
+                const playArea = document.getElementById('mon-play-area');
+                if (playArea) playArea.onpointerdown = (e) => { e.preventDefault(); shootMonPen(); };
             }
         }
         function startMonGame() { 
             startCountdown(() => { 
                 monState = 'playing'; monPensLeft = 5 + monLevel; monStuckAngles = []; monLives = 3; monFrameCount = 0;
-                render(); document.getElementById('mon-pens-left').innerText = monPensLeft;
+                render(); 
+                const pensEl = document.getElementById('mon-pens-left');
+                if (pensEl) pensEl.innerText = monPensLeft;
             }); 
         }
         function monLoop() {
@@ -323,15 +352,21 @@
             if (monIsShooting || monState !== 'playing') return;
             monIsShooting = true; vibe([10]);
             const shooter = document.getElementById('mon-shooter');
+            if (!shooter) { monIsShooting = false; return; }
             shooter.style.transition = 'margin-top 0.1s linear'; shooter.style.marginTop = '0px';
             setTimeout(() => {
+                if (currentDay !== 1 || monState !== 'playing') return;
                 const hitAngle = (360 - (monRotation % 360)) % 360;
                 const isCollision = monStuckAngles.some(a => Math.abs(a - hitAngle) < 10); 
                 if (isCollision) {
                     vibe([40, 50, 40]);
                     shooter.style.transition = 'transform 0.4s, margin-top 0.4s'; shooter.style.transform = 'translateX(-50%) rotate(45deg)'; shooter.style.marginTop = '200px';
-                    monLives--; document.getElementById('mon-lives-display').innerText = monLives;
+                    monLives--; 
+                    const livesEl = document.getElementById('mon-lives-display');
+                    if (livesEl) livesEl.innerText = monLives;
+                    
                     setTimeout(() => {
+                        if (currentDay !== 1 || monState !== 'playing') return;
                         if (monLives <= 0) {
                             showModal("Oops!", `You fell on Stage ${monLevel}. Take these coins and try again!`, "Claim", () => { monState = 'setup'; monLevel = 1; render(); }, monLevel * 4);
                         } else { shooter.style.transition = 'none'; shooter.style.transform = 'translateX(-50%)'; shooter.style.marginTop = '100px'; monIsShooting = false; }
@@ -339,9 +374,16 @@
                 } else {
                     monStuckAngles.push(hitAngle); vibe([20, 30, 20]);
                     const pen = document.createElement('div'); pen.className = 'pen-stuck'; pen.style.transform = `rotate(${hitAngle}deg)`; pen.innerHTML = `<div class="pen-tip"></div><div class="pen-body"></div>`;
-                    document.getElementById('mon-stuck-layer').appendChild(pen);
-                    const wrap = document.getElementById('mon-target-wrap'); wrap.classList.remove('mon-hit-anim'); void wrap.offsetWidth; wrap.classList.add('mon-hit-anim');
-                    monPensLeft--; document.getElementById('mon-pens-left').innerText = monPensLeft;
+                    const stuckLayer = document.getElementById('mon-stuck-layer');
+                    if (stuckLayer) stuckLayer.appendChild(pen);
+                    
+                    const wrap = document.getElementById('mon-target-wrap'); 
+                    if (wrap) { wrap.classList.remove('mon-hit-anim'); void wrap.offsetWidth; wrap.classList.add('mon-hit-anim'); }
+                    
+                    monPensLeft--; 
+                    const pensEl = document.getElementById('mon-pens-left');
+                    if (pensEl) pensEl.innerText = monPensLeft;
+                    
                     shooter.style.transition = 'none'; shooter.style.marginTop = '100px'; monIsShooting = false;
                     if (monPensLeft <= 0) {
                         if (monLevel >= 3) { showModal("Sweet!", "You crushed it all!", "Claim", () => { monState = 'setup'; monLevel = 1; render(); }, 20); } 
@@ -406,7 +448,8 @@
             
             let elapsed = (performance.now() - tueStartTime) / 1000;
             tueTimeLeft = Math.max(0, Math.ceil(tueDurations[tueLevel - 1] - elapsed));
-            document.getElementById('stat-value').innerText = `${tueTimeLeft}s | x${tueCombo}`;
+            const statVal = document.getElementById('stat-value');
+            if (statVal) statVal.innerText = `${tueTimeLeft}s | x${tueCombo}`;
 
             if (tueTimeLeft <= 0) {
                 tueState = 'gameover';
@@ -450,10 +493,15 @@
                 tueCtx.restore();
                 
                 if (env.y > tueCanvas.height + 60) { 
-                    tueEnvelopes.splice(i, 1); tueLives--; tueCombo = 0; // Combo reset on miss
-                    document.getElementById('tue-lives').innerText = '❤️'.repeat(Math.max(0, tueLives));
+                    tueEnvelopes.splice(i, 1); tueLives--; tueCombo = 0; 
+                    const livesEl = document.getElementById('tue-lives');
+                    if(livesEl) livesEl.innerText = '❤️'.repeat(Math.max(0, tueLives));
                     vibe([50, 60, 50]);
-                    const wrap = document.getElementById('tue-wrap'); wrap.style.transform = `translate(0, 10px)`; setTimeout(() => wrap.style.transform = 'translate(0,0)', 50);
+                    const wrap = document.getElementById('tue-wrap'); 
+                    if (wrap) {
+                        wrap.style.transform = `translate(0, 10px)`; 
+                        setTimeout(() => { if (document.getElementById('tue-wrap')) document.getElementById('tue-wrap').style.transform = 'translate(0,0)'; }, 50);
+                    }
                     
                     if (tueLives <= 0) {
                         tueState = 'gameover';
@@ -490,7 +538,11 @@
                         flyLayer.appendChild(txt); setTimeout(() => txt.remove(), 600);
                     }
                     
-                    const wrap = document.getElementById('tue-wrap'); wrap.style.transform = `translate(${(Math.random()-0.5)*6}px, ${(Math.random()-0.5)*6}px)`; setTimeout(() => wrap.style.transform = 'translate(0,0)', 50);
+                    const wrap = document.getElementById('tue-wrap'); 
+                    if (wrap) {
+                        wrap.style.transform = `translate(${(Math.random()-0.5)*6}px, ${(Math.random()-0.5)*6}px)`; 
+                        setTimeout(() => { if (document.getElementById('tue-wrap')) document.getElementById('tue-wrap').style.transform = 'translate(0,0)'; }, 50);
+                    }
                     tueCtx.fillStyle = 'rgba(255,255,255,0.4)'; tueCtx.fillRect(0,0,tueCanvas.width,tueCanvas.height); 
                     
                     tueEnvelopes.splice(i, 1);
@@ -502,15 +554,25 @@
         function renderWednesday(scene) {
             if (wedState === 'setup') {
                 wedLevel = 1; 
-                scene.innerHTML = `<div class="glass-card p-6 flex flex-col items-center gap-4 w-72 md:w-80 text-center mx-auto scale-95 origin-center"><div class="flex items-center justify-center h-28 w-full gap-5 mb-1 bg-white rounded-xl shadow-inner relative"><div class="w-10 h-14 border-[4px] border-emerald-900 rounded-b-xl flex flex-col justify-end overflow-hidden"><div id="wed-demo-liquid" class="w-full bg-[#6F4E37]" style="height: 0%;"></div></div><div id="wed-demo-timer" class="text-emerald-600 font-black text-2xl md:text-3xl w-24 tabular-nums">0.00s</div></div><h2 class="font-black text-base md:text-lg uppercase text-emerald-800 tracking-widest">Wednesday Drop</h2><p class="text-[11px] md:text-xs font-bold text-gray-600">Hold to pour. Stop exactly at <span class="text-emerald-600 text-sm">5s, 7s, 15s</span>!</p><button onclick="startWedGame()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-lg shadow-lg mt-1">Start</button></div>`;
+                scene.innerHTML = `<div class="glass-card p-6 flex flex-col items-center gap-4 w-72 md:w-80 text-center mx-auto scale-95 origin-center"><div class="flex items-center justify-center h-28 w-full gap-5 mb-1 bg-white rounded-xl shadow-inner relative"><div class="w-10 h-14 border-[4px] border-emerald-900 rounded-b-xl flex flex-col justify-end overflow-hidden"><div id="wed-demo-liquid" class="w-full bg-[#6F4E37]" style="height: 0%;"></div></div><div id="wed-demo-timer" class="text-emerald-600 font-black text-2xl md:text-3xl w-24 tabular-nums">0.00s</div></div><h2 class="font-black text-base md:text-lg uppercase text-emerald-800 tracking-widest">Wednesday Drop</h2><p class="text-[11px] md:text-xs font-bold text-gray-600">Hold to pour. Stop exactly at <span class="text-emerald-600 text-sm">5s, 7s, 15s</span>!</p><button id="wed-start-btn" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-lg shadow-lg mt-1">Start</button></div>`;
+                const startBtn = document.getElementById('wed-start-btn');
+                if (startBtn) startBtn.onclick = startWedGame;
+
                 setTimeout(() => {
-                    const demoTimer = document.getElementById('wed-demo-timer'); const demoLiquid = document.getElementById('wed-demo-liquid'); if(!demoTimer || !demoLiquid) return;
                     let start = performance.now();
                     function wedDemoLoop() {
                         if (currentDay !== 3 || wedState !== 'setup') return;
+                        const demoTimer = document.getElementById('wed-demo-timer'); 
+                        const demoLiquid = document.getElementById('wed-demo-liquid');
                         let elapsed = (performance.now() - start) % 4000;
-                        if (elapsed < 3400) { demoTimer.innerText = ((elapsed / 3400) * 5).toFixed(2) + 's'; demoLiquid.style.height = ((elapsed / 3400) * 100) + '%'; } 
-                        else { demoTimer.innerText = '5.00s'; demoLiquid.style.height = '100%'; }
+                        if (elapsed < 3400) { 
+                            if(demoTimer) demoTimer.innerText = ((elapsed / 3400) * 5).toFixed(2) + 's'; 
+                            if(demoLiquid) demoLiquid.style.height = ((elapsed / 3400) * 100) + '%'; 
+                        } 
+                        else { 
+                            if(demoTimer) demoTimer.innerText = '5.00s'; 
+                            if(demoLiquid) demoLiquid.style.height = '100%'; 
+                        }
                         requestAnimationFrame(wedDemoLoop);
                     }
                     wedDemoLoop();
@@ -528,17 +590,21 @@
                     </div>`;
                 const btn = document.getElementById('wed-btn');
                 const triggerFinish = () => { if (wedIsPressing) finishWedGame(); };
-                btn.onpointerdown = (e) => { e.preventDefault(); wedIsPressing = true; wedStartTime = performance.now(); wedLoop(); vibe([15]); };
-                btn.onpointerup = triggerFinish; btn.onpointerleave = triggerFinish; btn.onpointercancel = triggerFinish;
+                if (btn) {
+                    btn.onpointerdown = (e) => { e.preventDefault(); wedIsPressing = true; wedStartTime = performance.now(); wedLoop(); vibe([15]); };
+                    btn.onpointerup = triggerFinish; btn.onpointerleave = triggerFinish; btn.onpointercancel = triggerFinish;
+                }
             }
         }
         function startWedGame() { startCountdown(() => { wedState = 'playing'; render(); }); }
         function wedLoop() {
-            if (!wedIsPressing) return;
+            if (!wedIsPressing || currentDay !== 3 || wedState !== 'playing') return;
             const elapsed = performance.now() - wedStartTime;
             const targetTime = wedTargets[wedLevel - 1];
-            document.getElementById('wed-liquid').style.height = `${Math.min(100, (elapsed / (targetTime * 1000)) * 100)}%`;
-            document.getElementById('wed-timer-display').innerText = (elapsed / 1000).toFixed(2) + 's';
+            const liq = document.getElementById('wed-liquid');
+            const timer = document.getElementById('wed-timer-display');
+            if (liq) liq.style.height = `${Math.min(100, (elapsed / (targetTime * 1000)) * 100)}%`;
+            if (timer) timer.innerText = (elapsed / 1000).toFixed(2) + 's';
             
             const targetMs = targetTime * 1000;
             if (elapsed > targetMs - 1500 && elapsed < targetMs + 500) {
@@ -549,8 +615,10 @@
             wedAnimId = requestAnimationFrame(wedLoop);
         }
         function finishWedGame() {
-            wedIsPressing = false; const elapsed = (performance.now() - wedStartTime) / 1000;
-            const targetTime = wedTargets[wedLevel - 1]; const diff = Math.abs(targetTime - elapsed);
+            wedIsPressing = false; 
+            const elapsed = (performance.now() - wedStartTime) / 1000;
+            const targetTime = wedTargets[wedLevel - 1]; 
+            const diff = Math.abs(targetTime - elapsed);
             const tolerance = wedLevel === 3 ? 0.8 : (wedLevel === 2 ? 0.5 : 0.3);
             
             if (diff <= tolerance) { 
@@ -570,26 +638,42 @@
                 scene.innerHTML = `<div class="glass-card p-6 flex flex-col items-center gap-4 w-72 md:w-80 text-center mx-auto scale-95 origin-center"><div class="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center bg-white rounded-full shadow-inner mb-1 border-4 border-emerald-100" style="animation: demoThuCamera 2s infinite;"><span class="text-5xl md:text-6xl">📸🌿</span></div><h2 class="font-black text-base md:text-lg uppercase text-emerald-800 tracking-widest">Thursday Sense</h2><p class="text-xs font-bold text-gray-600">Snap 3 items that are 80%+ GREEN!</p><button onclick="startThuGame()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-base md:text-xl shadow-lg mt-1">Start</button></div>`;
             } else {
                 scene.innerHTML = `<div class="flex flex-col items-center justify-center w-full h-full gap-4 px-4"><div class="text-center"><h3 class="text-xl md:text-2xl font-black text-emerald-900 tracking-wider mb-1">Find Green</h3><div class="text-5xl md:text-6xl font-black text-emerald-500 drop-shadow-md" id="thu-score-display">${thuScore} / 3</div></div><div class="relative w-32 h-32 md:w-40 md:h-40 my-2"><input type="file" id="thu-camera" accept="image/*" capture="environment" class="hidden"><button onclick="document.getElementById('thu-camera').click()" class="w-full h-full bg-emerald-50 rounded-full border-[6px] border-emerald-500 text-5xl md:text-6xl flex items-center justify-center shadow-xl active:scale-90 transition-transform" id="thu-snap-btn">📸</button><div id="thu-loading" class="absolute inset-0 bg-white/90 rounded-full flex flex-col items-center justify-center hidden z-10"><div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-2"></div></div></div><p class="text-xs md:text-sm text-gray-700 font-bold px-4 py-2 bg-white/60 rounded-lg text-center shadow-sm" id="thu-feedback">Snap a very green object.</p></div>`;
-                document.getElementById('thu-camera').onchange = handleThuUpload;
+                const cam = document.getElementById('thu-camera');
+                if(cam) cam.onchange = handleThuUpload;
             }
         }
         function startThuGame() { startCountdown(() => { thuState = 'playing'; thuScore = 0; render(); }); }
         function handleThuUpload(e) {
             const file = e.target.files[0]; if(!file) return; vibe([20]);
-            const loading = document.getElementById('thu-loading'); const feedback = document.getElementById('thu-feedback');
-            loading.classList.remove('hidden'); feedback.innerText = "AI checking color...";
+            const loading = document.getElementById('thu-loading'); 
+            const feedback = document.getElementById('thu-feedback');
+            if(loading) loading.classList.remove('hidden'); 
+            if(feedback) feedback.innerText = "AI checking color...";
+            
             const reader = new FileReader();
             reader.onload = async (ev) => {
                 const base64 = ev.target.result;
                 const prompt = "Analyze the image. Does the color green occupy 80% or more of the entire image area? You must respond strictly with only 'YES' or 'NO'.";
                 const result = await callGemini(prompt, "You are a strict color ratio analyzer.", base64);
-                loading.classList.add('hidden');
+                
+                if (currentDay !== 4 || thuState !== 'playing') return; // Guard clause against unmounted views
+                
+                if(loading) loading.classList.add('hidden');
+                
                 if (result.toUpperCase().includes('YES')) {
                     thuScore++; vibe([30, 50, 30]);
-                    if (thuScore >= 3) { showModal("Eyes Wide Open!", "You found 3 super green items!", "Claim", () => { thuState = 'setup'; render(); }, 20); } 
-                    else { feedback.innerText = "Good! Keep finding green!"; document.getElementById('thu-score-display').innerText = `${thuScore} / 3`; document.getElementById('stat-value').innerText = `${thuScore} / 3`; }
+                    if (thuScore >= 3) { 
+                        showModal("Eyes Wide Open!", "You found 3 super green items!", "Claim", () => { thuState = 'setup'; render(); }, 20); 
+                    } else { 
+                        if(feedback) feedback.innerText = "Good! Keep finding green!"; 
+                        const scoreDisp = document.getElementById('thu-score-display');
+                        if(scoreDisp) scoreDisp.innerText = `${thuScore} / 3`; 
+                        const statVal = document.getElementById('stat-value');
+                        if(statVal) statVal.innerText = `${thuScore} / 3`; 
+                    }
                 } else {
-                    feedback.innerText = "Not green enough. Try again!"; vibe([100, 50, 100]);
+                    if(feedback) feedback.innerText = "Not green enough. Try again!"; 
+                    vibe([100, 50, 100]);
                 }
             };
             reader.readAsDataURL(file);
@@ -634,8 +718,12 @@
                         ${friTargetImg ? `<p class="text-[10px] text-gray-500 font-bold">Drag/Pinch to adjust</p><button onclick="startFriGame()" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-black text-base animate-pulse shadow-lg mt-1">Pump It!</button>` : `<button onclick="document.getElementById('fri-file').click()" class="w-full bg-gray-200 text-gray-600 py-2.5 rounded-xl font-black text-base mt-1">Add Photo</button>`}
                     </div>`;
                 const uploadArea = document.getElementById('fri-upload-area');
-                if (!friTargetImg) uploadArea.onclick = () => document.getElementById('fri-file').click(); else initFriGestures(uploadArea);
-                document.getElementById('fri-file').onchange = (e) => { const reader = new FileReader(); reader.onload = (ev) => { friTargetImg = ev.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); };
+                const fileInput = document.getElementById('fri-file');
+                if (uploadArea && fileInput) {
+                    if (!friTargetImg) uploadArea.onclick = () => fileInput.click(); 
+                    else initFriGestures(uploadArea);
+                    fileInput.onchange = (e) => { const reader = new FileReader(); reader.onload = (ev) => { friTargetImg = ev.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); };
+                }
             } else {
                 scene.innerHTML = `
                     <div class="flex flex-col items-center gap-4 touch-none w-full relative" id="fri-play-container">
@@ -659,17 +747,22 @@
                         const balloonWrap = document.getElementById('fri-balloon-wrap'); if(balloonWrap) balloonWrap.style.display = 'none';
                         vibe([100, 50, 100, 50, 100]);
                         const container = document.getElementById('fri-play-container');
-                        for(let i = 0; i < 25; i++) {
-                            const c = document.createElement('img'); setCoinImage(c);
-                            c.className = 'absolute w-10 h-10 md:w-12 md:h-12 z-50 pointer-events-none drop-shadow-md';
-                            c.style.left = 'calc(50% - 20px)'; c.style.top = '60px'; 
-                            c.style.setProperty('--tx', `${(Math.random() - 0.5) * 400}px`); c.style.setProperty('--ty', `${(Math.random() - 0.5) * 400}px`); c.style.setProperty('--rot', `${(Math.random() - 0.5) * 720}deg`);
-                            c.style.animation = 'shatterCoin 1s cubic-bezier(0.25, 1, 0.5, 1) forwards'; container.appendChild(c);
+                        if (container) {
+                            for(let i = 0; i < 25; i++) {
+                                const c = document.createElement('img'); setCoinImage(c);
+                                c.className = 'absolute w-10 h-10 md:w-12 md:h-12 z-50 pointer-events-none drop-shadow-md';
+                                c.style.left = 'calc(50% - 20px)'; c.style.top = '60px'; 
+                                c.style.setProperty('--tx', `${(Math.random() - 0.5) * 400}px`); c.style.setProperty('--ty', `${(Math.random() - 0.5) * 400}px`); c.style.setProperty('--rot', `${(Math.random() - 0.5) * 720}deg`);
+                                c.style.animation = 'shatterCoin 1s cubic-bezier(0.25, 1, 0.5, 1) forwards'; container.appendChild(c);
+                            }
                         }
-                        setTimeout(() => { showModal("BOOM! 🎉", "Stress shattered!", "Claim", () => { friState='setup'; render(); }, 18); }, 1200);
+                        setTimeout(() => { if(currentDay === 5) showModal("BOOM! 🎉", "Stress shattered!", "Claim", () => { friState='setup'; render(); }, 18); }, 1200);
                     }
                 };
-                document.getElementById('fri-pump-btn').onpointerdown = pump; document.getElementById('fri-balloon-wrap').onpointerdown = pump;
+                const pumpBtn = document.getElementById('fri-pump-btn');
+                const wrapBtn = document.getElementById('fri-balloon-wrap');
+                if(pumpBtn) pumpBtn.onpointerdown = pump; 
+                if(wrapBtn) wrapBtn.onpointerdown = pump;
                 friLoop();
             }
         }
@@ -679,12 +772,13 @@
             if (friPopProgress > 0) {
                 friPopProgress -= 0.15; 
                 const balloon = document.getElementById('fri-balloon-wrap'); const balloonInner = document.getElementById('fri-balloon'); const knot = document.getElementById('fri-knot'); const bar = document.getElementById('fri-bar');
-                if (balloon && bar) {
+                if (balloon && bar && balloonInner && knot) {
                     balloon.style.transform = `scale(${1 + (friPopProgress / 100) * 1.6})`; bar.style.width = friPopProgress + '%';
                     if(friPopProgress > 80) { balloonInner.style.borderColor = '#FCA5A5'; knot.style.borderBottomColor = '#EF4444'; } else { balloonInner.style.borderColor = '#6EE7B7'; knot.style.borderBottomColor = '#34D399'; }
                 }
             }
-            document.getElementById('stat-value').innerText = Math.floor(friPopProgress) + "%";
+            const statVal = document.getElementById('stat-value');
+            if (statVal) statVal.innerText = Math.floor(friPopProgress) + "%";
             friAnimId = requestAnimationFrame(friLoop);
         }
 
@@ -749,16 +843,22 @@
             satCtx.beginPath(); satCtx.arc(x, y, radius, 0, Math.PI * 2); satCtx.fillStyle = grad; satCtx.fill(); satCtx.globalCompositeOperation = 'source-over';
             satCoins.forEach(c => {
                 if (!c.revealed && Math.hypot(c.x - x, c.y - y) < radius - 15) {
-                    c.revealed = true; c.el.classList.remove('scale-50', 'opacity-0'); c.el.classList.add('scale-100', 'opacity-100', 'animate-bounce'); c.sparkleEl.style.display = 'none'; satCoinsCollected++; document.getElementById('stat-value').innerText = `${satCoinsCollected} / ${satTotalCoins}`; vibe([20]);
-                    if (satCoinsCollected >= satTotalCoins) { setTimeout(() => { showModal("Relaxed!", `Found all ${satTotalCoins} coins!`, "Claim", () => { satState = 'setup'; render(); }, satTotalCoins); }, 1000); }
+                    c.revealed = true; c.el.classList.remove('scale-50', 'opacity-0'); c.el.classList.add('scale-100', 'opacity-100', 'animate-bounce'); c.sparkleEl.style.display = 'none'; satCoinsCollected++; 
+                    const statVal = document.getElementById('stat-value');
+                    if(statVal) statVal.innerText = `${satCoinsCollected} / ${satTotalCoins}`; 
+                    vibe([20]);
+                    if (satCoinsCollected >= satTotalCoins) { setTimeout(() => { if (currentDay === 6) showModal("Relaxed!", `Found all ${satTotalCoins} coins!`, "Claim", () => { satState = 'setup'; render(); }, satTotalCoins); }, 1000); }
                 }
             });
         }
         function handleSatPenalty() {
             satIsFleeing = true; satSpeedOffenses++; satCurrentSpeed = 0; satLastPos = null; satIsSwiping = false;
-            const guideText = document.getElementById('sat-guide-text'); guideText.classList.replace('text-white', 'text-red-400');
-            if (satSpeedOffenses === 1) { guideText.innerText = "Too fast! They are hiding!"; vibe([50, 60, 50, 60, 50]); } 
-            else { guideText.innerText = "Too fast twice! They ran away!"; vibe([100, 100, 100, 100, 100]); }
+            const guideText = document.getElementById('sat-guide-text'); 
+            if(guideText) guideText.classList.replace('text-white', 'text-red-400');
+            
+            if (satSpeedOffenses === 1) { if(guideText) guideText.innerText = "Too fast! They are hiding!"; vibe([50, 60, 50, 60, 50]); } 
+            else { if(guideText) guideText.innerText = "Too fast twice! They ran away!"; vibe([100, 100, 100, 100, 100]); }
+            
             satCoins.forEach(c => {
                 if (!c.revealed) {
                     const cx = satCanvas.width / 2, cy = satCanvas.height / 2, dx = c.x - cx, dy = c.y - cy, dist = Math.hypot(dx, dy) || 1, runX = (dx / dist) * 800, runY = (dy / dist) * 800;
@@ -766,6 +866,7 @@
                 }
             });
             setTimeout(() => {
+                if (currentDay !== 6 || satState !== 'playing') return;
                 if (satSpeedOffenses === 1) {
                     fillSatFog();
                     satCoins.forEach(c => {
@@ -773,7 +874,8 @@
                             c.x = 40 + Math.random() * (satCanvas.width - 80); c.y = 40 + Math.random() * (satCanvas.height - 80); c.el.className = 'absolute w-16 h-16 md:w-20 md:h-20 transition-all duration-500 transform scale-50 opacity-0 flex items-center justify-center pointer-events-none'; c.el.style.left = `${c.x - 32}px`; c.el.style.top = `${c.y - 32}px`; c.sparkleEl.style.left = `${c.x}px`; c.sparkleEl.style.top = `${c.y}px`; c.sparkleEl.style.display = 'block';
                         }
                     });
-                    guideText.innerText = "They hid again. Slowly..."; guideText.classList.replace('text-red-400', 'text-white'); satIsFleeing = false;
+                    if(guideText) { guideText.innerText = "They hid again. Slowly..."; guideText.classList.replace('text-red-400', 'text-white'); }
+                    satIsFleeing = false;
                 } else { showModal("All Gone!", "You wiped too fast. They escaped. Zero rewards.", "I'll be slower", () => { satState = 'setup'; render(); }, 0); }
             }, 1200);
         }
@@ -819,9 +921,17 @@
                 sunCtx.save(); sunCtx.translate(c.x, c.y); sunCtx.rotate(c.rot);
                 if (coinImg.complete && coinImg.naturalWidth !== 0) { sunCtx.drawImage(coinImg, -25, -25, 50, 50); }
                 sunCtx.restore();
-                if(c.y + 15 > by && c.y - 15 < by + bh && c.x > bx - 15 && c.x < bx + bw + 15) { sunScore++; sunCoins.splice(i, 1); vibe([15]); document.getElementById('stat-value').innerText = sunScore; continue; }
+                if(c.y + 15 > by && c.y - 15 < by + bh && c.x > bx - 15 && c.x < bx + bw + 15) { 
+                    sunScore++; sunCoins.splice(i, 1); vibe([15]); 
+                    const statVal = document.getElementById('stat-value');
+                    if (statVal) statVal.innerText = sunScore; 
+                    continue; 
+                }
                 if(c.y > sunCanvas.height + 30) {
-                    sunCoins.splice(i, 1); sunLives--; document.getElementById('sun-lives').innerText = '❤️'.repeat(sunLives); vibe([40, 40]);
+                    sunCoins.splice(i, 1); sunLives--; 
+                    const livesEl = document.getElementById('sun-lives');
+                    if (livesEl) livesEl.innerText = '❤️'.repeat(Math.max(0, sunLives)); 
+                    vibe([40, 40]);
                     if(sunLives <= 0) { sunState = 'gameover'; showModal("Bedtime!", `Caught ${sunScore} coins! Ready for Monday?`, "Claim", () => { sunState = 'setup'; render(); }, sunScore); }
                 }
             }
@@ -830,22 +940,34 @@
 
         function showModal(title, content, btnText, callback, rewardCoins = 0) {
             const modal = document.getElementById('game-modal'); const rewardDiv = document.getElementById('modal-reward'); const btn = document.getElementById('modal-btn');
-            document.getElementById('modal-title').innerText = title; document.getElementById('modal-content').innerHTML = content;
+            const titleEl = document.getElementById('modal-title');
+            const contentEl = document.getElementById('modal-content');
+            if (titleEl) titleEl.innerText = title; 
+            if (contentEl) contentEl.innerHTML = content;
+            
             if (rewardCoins > 0) {
-                rewardDiv.style.display = 'flex'; document.getElementById('modal-coin-amount').innerText = `+${rewardCoins}`;
-                btn.onclick = () => { const rect = btn.getBoundingClientRect(); animateCoinsToWallet(rewardCoins, rect); addLifeCoins(rewardCoins); modal.style.display = 'none'; callback(); };
-            } else { rewardDiv.style.display = 'none'; btn.onclick = () => { modal.style.display = 'none'; callback(); }; }
-            btn.innerText = btnText; modal.style.display = 'flex';
+                if (rewardDiv) rewardDiv.style.display = 'flex'; 
+                const coinAmount = document.getElementById('modal-coin-amount');
+                if (coinAmount) coinAmount.innerText = `+${rewardCoins}`;
+                if (btn) btn.onclick = () => { const rect = btn.getBoundingClientRect(); animateCoinsToWallet(rewardCoins, rect); addLifeCoins(rewardCoins); if(modal) modal.style.display = 'none'; callback(); };
+            } else { 
+                if (rewardDiv) rewardDiv.style.display = 'none'; 
+                if (btn) btn.onclick = () => { if(modal) modal.style.display = 'none'; callback(); }; 
+            }
+            if (btn) btn.innerText = btnText; 
+            if (modal) modal.style.display = 'flex';
         }
 
         // 選擇心情顏色的過渡動畫邏輯
         function pickMood(day) {
             vibe([15]);
             const moodScreen = document.getElementById('mood-screen');
-            moodScreen.style.pointerEvents = 'none'; // 防止重複點擊
-            moodScreen.style.opacity = '0';
+            if (moodScreen) {
+                moodScreen.style.pointerEvents = 'none'; 
+                moodScreen.style.opacity = '0';
+            }
             setTimeout(() => {
-                moodScreen.style.display = 'none';
+                if (moodScreen) moodScreen.style.display = 'none';
                 switchDay(day);
             }, 500);
         }
