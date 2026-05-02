@@ -158,7 +158,8 @@
     </main>
 
     <div id="countdown-overlay" class="fixed inset-0 bg-emerald-950/80 z-[2000] hidden flex-col items-center justify-center backdrop-blur-md">
-        <div id="countdown-text" class="text-white text-[30vw] md:text-[10rem] font-black italic tracking-tighter"></div>
+        <!-- 加了 p-4、whitespace-nowrap、leading-none 防止斜體文字被切掉 -->
+        <div id="countdown-text" class="text-white text-[25vw] md:text-[8rem] font-black italic tracking-tighter leading-none whitespace-nowrap p-4 drop-shadow-2xl text-center overflow-visible"></div>
     </div>
 
     <div id="game-modal" class="modal-overlay">
