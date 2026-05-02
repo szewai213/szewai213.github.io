@@ -332,7 +332,10 @@
         }
         function startMonGame() { 
             startCountdown(() => { 
-                monState = 'playing'; monPensLeft = 5 + monLevel; monStuckAngles = []; monLives = 3; monFrameCount = 0;
+                monState = 'playing'; 
+                // Increased pens required: 6, 10, 15
+                monPensLeft = [6, 10, 15][monLevel - 1]; 
+                monStuckAngles = []; monLives = 3; monFrameCount = 0;
                 render(); 
                 const pensEl = document.getElementById('mon-pens-left');
                 if (pensEl) pensEl.innerText = monPensLeft;
@@ -341,10 +344,14 @@
         function monLoop() {
             if (currentDay !== 1 || monState !== 'playing') return;
             monFrameCount++; let speed = 1.0;
-            if (monLevel === 1) speed = 1.5;
-            else if (monLevel === 2) { speed = Math.pow(Math.sin(monFrameCount * 0.008), 5) * (Math.sin(monFrameCount * 0.008) > 0 ? 6.0 : 3.0); } 
-            else { speed = Math.pow(Math.sin(monFrameCount * 0.01), 5) * (Math.sin(monFrameCount * 0.01) > 0 ? (7.0 + Math.cos(monFrameCount * 0.005)) : (4.0 - Math.cos(monFrameCount * 0.005))); }
+            
+            // Reduced rotation speed significantly for levels 2 and 3 (Level 3 now same as Level 2)
+            if (monLevel === 1) speed = 1.2;
+            else { 
+                speed = Math.pow(Math.sin(monFrameCount * 0.008), 3) * (Math.sin(monFrameCount * 0.008) > 0 ? 3.0 : 1.5); 
+            }
             monRotation += speed; 
+            
             const target = document.getElementById('mon-target-circle'); const layer = document.getElementById('mon-stuck-layer');
             if (target) target.style.transform = `rotate(${monRotation}deg)`; if (layer) layer.style.transform = `rotate(${monRotation}deg)`;
             monAnimId = requestAnimationFrame(monLoop);
@@ -464,13 +471,15 @@
             }
 
             let progress = elapsed / tueDurations[tueLevel - 1]; 
-            let baseRate = 45 - (tueLevel * 5) - (progress * 15) - Math.min(tueCombo, 15);
-            let spawnRate = Math.max(10, baseRate);
+            // 難度不再受連擊影響，時間越少難度越高，整體難度大幅降低
+            let baseRate = 80 - (tueLevel * 5) - (progress * 25);
+            let spawnRate = Math.max(25, baseRate);
             
             if (Math.random() < 1/spawnRate) {
                 const types = ['ASAP', 'MEET', 'FYI'];
-                let speedY = 3 + (tueLevel * 1.5) + (progress * 3) + (Math.min(tueCombo, 30) * 0.1);
-                tueEnvelopes.push({ x: 50 + Math.random()*(tueCanvas.width-100), y: -50, vx: (Math.random()-0.5)*4, vy: speedY, rot: 0, type: types[Math.floor(Math.random()*3)], color: '#EF4444' }); 
+                // 下調掉落速度，隨時間增加一點點速度
+                let speedY = 1.2 + (tueLevel * 0.6) + (progress * 1.5);
+                tueEnvelopes.push({ x: 50 + Math.random()*(tueCanvas.width-100), y: -50, vx: (Math.random()-0.5)*2.5, vy: speedY, rot: 0, type: types[Math.floor(Math.random()*3)], color: '#EF4444' }); 
             }
 
             tueCtx.fillStyle = '#DCFCE7'; tueCtx.fillRect(0, 0, tueCanvas.width, tueCanvas.height);
@@ -636,7 +645,8 @@
         // --- Thursday ---
         function renderThursday(scene) {
             if (thuState === 'setup') {
-                scene.innerHTML = `<div class="glass-card p-6 flex flex-col items-center gap-4 w-72 md:w-80 text-center mx-auto scale-95 origin-center"><div class="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center bg-white rounded-full shadow-inner mb-1 border-4 border-emerald-100" style="animation: demoThuCamera 2s infinite;"><span class="text-5xl md:text-6xl">📸🌿</span></div><h2 class="font-black text-base md:text-lg uppercase text-emerald-800 tracking-widest">Thursday Sense</h2><p class="text-xs font-bold text-gray-600">Snap 3 items that are 80%+ GREEN!</p><button onclick="startThuGame()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-base md:text-xl shadow-lg mt-1">Start</button></div>`;
+                // Lowered requirement text to 60%
+                scene.innerHTML = `<div class="glass-card p-6 flex flex-col items-center gap-4 w-72 md:w-80 text-center mx-auto scale-95 origin-center"><div class="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center bg-white rounded-full shadow-inner mb-1 border-4 border-emerald-100" style="animation: demoThuCamera 2s infinite;"><span class="text-5xl md:text-6xl">📸🌿</span></div><h2 class="font-black text-base md:text-lg uppercase text-emerald-800 tracking-widest">Thursday Sense</h2><p class="text-xs font-bold text-gray-600">Snap 3 items that are 60%+ GREEN!</p><button onclick="startThuGame()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-base md:text-xl shadow-lg mt-1">Start</button></div>`;
             } else {
                 scene.innerHTML = `<div class="flex flex-col items-center justify-center w-full h-full gap-4 px-4"><div class="text-center"><h3 class="text-xl md:text-2xl font-black text-emerald-900 tracking-wider mb-1">Find Green</h3><div class="text-5xl md:text-6xl font-black text-emerald-500 drop-shadow-md" id="thu-score-display">${thuScore} / 3</div></div><div class="relative w-32 h-32 md:w-40 md:h-40 my-2"><input type="file" id="thu-camera" accept="image/*" capture="environment" class="hidden"><button onclick="document.getElementById('thu-camera').click()" class="w-full h-full bg-emerald-50 rounded-full border-[6px] border-emerald-500 text-5xl md:text-6xl flex items-center justify-center shadow-xl active:scale-90 transition-transform" id="thu-snap-btn">📸</button><div id="thu-loading" class="absolute inset-0 bg-white/90 rounded-full flex flex-col items-center justify-center hidden z-10"><div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-2"></div></div></div><p class="text-xs md:text-sm text-gray-700 font-bold px-4 py-2 bg-white/60 rounded-lg text-center shadow-sm" id="thu-feedback">Snap a very green object.</p></div>`;
                 const cam = document.getElementById('thu-camera');
@@ -654,7 +664,8 @@
             const reader = new FileReader();
             reader.onload = async (ev) => {
                 const base64 = ev.target.result;
-                const prompt = "Analyze the image. Does the color green occupy 80% or more of the entire image area? You must respond strictly with only 'YES' or 'NO'.";
+                // Modified AI prompt to check for 60% green
+                const prompt = "Analyze the image. Does the color green occupy 60% or more of the entire image area? You must respond strictly with only 'YES' or 'NO'.";
                 const result = await callGemini(prompt, "You are a strict color ratio analyzer.", base64);
                 
                 if (currentDay !== 4 || thuState !== 'playing') return; // Guard clause against unmounted views
@@ -716,7 +727,7 @@
                             ${friTargetImg ? `<img id="fri-preview-img" src="${friTargetImg}" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); pointer-events: none;" class="max-w-none">` : `<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span class="text-2xl block mb-1">🎈</span><span class="text-emerald-500 font-bold text-[10px] uppercase">Tap to add stress</span></div>`}
                         </div>
                         <input type="file" id="fri-file" class="hidden" accept="image/*">
-                        ${friTargetImg ? `<p class="text-[10px] text-gray-500 font-bold">Drag/Pinch to adjust</p><button onclick="startFriGame()" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-black text-base animate-pulse shadow-lg mt-1">Pump It!</button>` : `<button onclick="document.getElementById('fri-file').click()" class="w-full bg-gray-200 text-gray-600 py-2.5 rounded-xl font-black text-base mt-1">Add Photo</button>`}
+                        ${friTargetImg ? `<p class="text-[10px] text-gray-500 font-bold">Drag/Pinch to adjust</p><button onclick="startFriGame()" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-black text-base animate-pulse shadow-lg mt-1">Ready!</button>` : `<button onclick="document.getElementById('fri-file').click()" class="w-full bg-gray-200 text-gray-600 py-2.5 rounded-xl font-black text-base mt-1">Add Photo</button>`}
                     </div>`;
                 const uploadArea = document.getElementById('fri-upload-area');
                 const fileInput = document.getElementById('fri-file');
@@ -728,21 +739,21 @@
             } else {
                 scene.innerHTML = `
                     <div class="flex flex-col items-center gap-4 touch-none w-full relative" id="fri-play-container">
-                        <div id="fri-balloon-wrap" class="w-32 h-32 md:w-40 md:h-40 relative transition-transform duration-75 cursor-pointer mt-2 md:mt-4">
+                        <div id="fri-balloon-wrap" class="w-40 h-40 md:w-48 md:h-48 relative transition-transform duration-75 cursor-pointer mt-8">
                             <div id="fri-balloon" class="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden shadow-inner border-[6px] border-emerald-300 relative">
-                                ${friTargetImg ? `<img id="fri-preview-img" src="${friTargetImg}" class="absolute max-w-none pointer-events-none" style="top: 50%; left: 50%; transform: translate(calc(-50% + ${friImgX}px), calc(-50% + ${friImgY}px)) scale(${friImgScale});">` : ''}
+                                ${friTargetImg ? `<img id="fri-preview-img" src="${friTargetImg}" class="absolute max-w-none pointer-events-none" style="top: 50%; left: 50%; transform: translate(calc(-50% + ${friImgX}px), calc(-50% + ${friImgY}px)) scale(${friImgScale});">` : `<span class="text-emerald-400 font-bold text-center px-4 leading-tight">TAP ME<br>FAST!</span>`}
                             </div>
                             <div id="fri-knot" class="balloon-knot"></div>
                         </div>
-                        <div class="w-56 md:w-64 h-3 md:h-4 bg-white rounded-full overflow-hidden border-2 border-emerald-200 mt-2">
+                        <div class="w-56 md:w-64 h-3 md:h-4 bg-white rounded-full overflow-hidden border-2 border-emerald-200 mt-4">
                             <div id="fri-bar" class="h-full bg-emerald-500 transition-all duration-75" style="width: 0%"></div>
                         </div>
-                        <p class="text-xs md:text-sm font-black text-emerald-800 uppercase animate-bounce my-1" id="fri-instruction">Don't stop pumping!</p>
-                        <button id="fri-pump-btn" class="w-56 md:w-64 py-4 md:py-6 bg-emerald-600 text-white font-black rounded-2xl shadow-xl active:scale-95 text-lg">Pump!</button>
+                        <p class="text-xs md:text-sm font-black text-emerald-800 uppercase animate-bounce my-2" id="fri-instruction">Tap the balloon to pump!</p>
                     </div>`;
                 const pump = (e) => {
                     e.preventDefault(); if (friIsExploded) return;
-                    friPopProgress += 8; vibe([15]);
+                    // Lowered gain per click to increase difficulty
+                    friPopProgress += 5; vibe([15]);
                     if (friPopProgress >= 100) {
                         friIsExploded = true; friPopProgress = 100;
                         const balloonWrap = document.getElementById('fri-balloon-wrap'); if(balloonWrap) balloonWrap.style.display = 'none';
@@ -760,9 +771,8 @@
                         setTimeout(() => { if(currentDay === 5) showModal("BOOM! 🎉", "Stress shattered!", "Claim", () => { friState='setup'; render(); }, 18); }, 1200);
                     }
                 };
-                const pumpBtn = document.getElementById('fri-pump-btn');
+                // Attach touch/click event directly to the balloon wrap instead of a button
                 const wrapBtn = document.getElementById('fri-balloon-wrap');
-                if(pumpBtn) pumpBtn.onpointerdown = pump; 
                 if(wrapBtn) wrapBtn.onpointerdown = pump;
                 friLoop();
             }
@@ -771,7 +781,8 @@
         function friLoop() {
             if (currentDay !== 5 || friState !== 'playing' || friIsExploded) return;
             if (friPopProgress > 0) {
-                friPopProgress -= 0.15; 
+                // Increased drop rate to make it harder to sustain progress
+                friPopProgress -= 0.2; 
                 const balloon = document.getElementById('fri-balloon-wrap'); const balloonInner = document.getElementById('fri-balloon'); const knot = document.getElementById('fri-knot'); const bar = document.getElementById('fri-bar');
                 if (balloon && bar && balloonInner && knot) {
                     balloon.style.transform = `scale(${1 + (friPopProgress / 100) * 1.6})`; bar.style.width = friPopProgress + '%';
