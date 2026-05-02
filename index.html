@@ -62,6 +62,8 @@
         @keyframes flyCoin { 0% { transform: scale(1) translate(0, 0); opacity: 1; } 100% { transform: scale(0.5) translate(var(--tx), var(--ty)); opacity: 0; } }
         @keyframes demoFriPumpSlow { 0% { transform: scale(0.6); } 25% { transform: scale(1.2); } 50% { transform: scale(1.8); } 75% { transform: scale(2.5); opacity: 1; } 85%, 100% { transform: scale(0); opacity: 0; } }
         @keyframes demoFriClickSlow { 0%, 25%, 50%, 75% { transform: translate(0,0) scale(1); } 12%, 37%, 62%, 80% { transform: translate(-10px, -10px) scale(0.8); } 85%, 100% { opacity: 0; } }
+        @keyframes monHitElastic { 0% { transform: scale(1); } 40% { transform: scale(0.92); } 70% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        .mon-hit-anim { animation: monHitElastic 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 
         /* 遊戲組件樣式 */
         .target-circle { width: 160px; height: 160px; border-radius: 50%; background: #e5e7eb; border: 6px solid #9ca3af; position: relative; z-index: 10; }
@@ -141,20 +143,27 @@
         let currentDay = 1;
         let countdownTimer = null;
         
-        // --- 高度還原 Life Coin SVG (修正圓弧、間距與粗幼度) ---
-        // 外圈圓 r=50 (直徑100)，薄荷綠底色。
-        // 外弧: r=35, stroke-width=10, 確保右上有完美的開口。
-        // 內部L型指針: 向上指至 y=33, 向右指至 x=67, 確保與外弧留有完美的間距。
+        // --- 高度還原 Life Coin SVG (修正為直角/銳利細節，非全圓弧) ---
+        // 外弧: 使用 square linecap 讓邊緣銳利
+        // L型指針: 使用 miter 確保轉角尖銳直角
         const lifeCoinSvgRaw = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <circle cx="50" cy="50" r="50" fill="#90A96B"/>
-            <path d="M 85 50 A 35 35 0 1 1 50 15" fill="none" stroke="white" stroke-width="10" stroke-linecap="round"/>
-            <path d="M 50 33 L 50 50 L 67 50" fill="none" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 85 50 A 35 35 0 1 1 50 15" fill="none" stroke="white" stroke-width="10" stroke-linecap="square"/>
+            <path d="M 45 30 L 45 55 L 70 55" fill="none" stroke="white" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"/>
         </svg>`;
-        const LIFE_COIN_SRC = 'data:image/svg+xml;base64,' + btoa(lifeCoinSvgRaw);
         
-        // 初始化錢包與彈窗的圖標
-        document.getElementById('wallet-coin-icon').src = LIFE_COIN_SRC;
-        document.getElementById('modal-coin-icon').src = LIFE_COIN_SRC;
+        // 優先讀取您提供的 SVG 檔案，若檔案無法載入(不可見)則自動回退至修正後的 Base64
+        const fallbackCoinSrc = 'data:image/svg+xml;base64,' + btoa(lifeCoinSvgRaw);
+        const LIFE_COIN_SRC = encodeURI('工作區域 1.svg'); 
+        
+        // 初始化錢包與彈窗的圖標，加入 onerror 備援機制確保絕對可見
+        const walletIcon = document.getElementById('wallet-coin-icon');
+        walletIcon.onerror = () => { walletIcon.src = fallbackCoinSrc; };
+        walletIcon.src = LIFE_COIN_SRC;
+
+        const modalIcon = document.getElementById('modal-coin-icon');
+        modalIcon.onerror = () => { modalIcon.src = fallbackCoinSrc; };
+        modalIcon.src = LIFE_COIN_SRC;
         
         // 全域金幣管理
         let totalLifeCoins = parseInt(localStorage.getItem('gapSense_lifeCoins')) || 0;
@@ -172,6 +181,7 @@
             for(let i=0; i<Math.min(amount, 10); i++) {
                 setTimeout(() => {
                     const coin = document.createElement('img');
+                    coin.onerror = () => { coin.src = fallbackCoinSrc; };
                     coin.src = LIFE_COIN_SRC;
                     coin.className = 'flying-coin';
                     coin.style.left = `${startRect.left + startRect.width/2 - 20}px`;
@@ -207,7 +217,7 @@
         }
 
         // 各日狀態
-        let monState = 'setup', monLevel = 1, monPensLeft = 0, monLives = 3, monRotation = 0, monStuckAngles = [], monBossImg = null, monIsShooting = false, monAnimId = null;
+        let monState = 'setup', monLevel = 1, monPensLeft = 0, monLives = 3, monRotation = 0, monStuckAngles = [], monBossImg = null, monIsShooting = false, monAnimId = null, monFrameCount = 0;
         let tueAnimId = null, tueCanvas, tueCtx, tueState = 'setup', tueScore = 0, tueHighScore = parseInt(localStorage.getItem('gapSense_tueHigh')) || 0, tueLives = 3, tueEnvelopes = [], tueParticles = [], tueTrail = [], tueIsSwiping = false, tueFrameCount = 0;
         let wedAnimId = null, wedState = 'setup', wedLevel = 1, wedTargets = [5, 7, 15], wedStartTime = 0, wedIsPressing = false;
         let thuState = 'setup', thuScore = 0;
@@ -270,13 +280,32 @@
                 monPensLeft = 5 + monLevel; 
                 monStuckAngles = []; 
                 monLives = 3; 
+                monFrameCount = 0;
                 render(); 
                 document.getElementById('mon-pens-left').innerText = monPensLeft;
             }); 
         }
         function monLoop() {
             if (currentDay !== 1 || monState !== 'playing') return;
-            monRotation += 1.0 + (monLevel * 0.2); 
+            monFrameCount++;
+            let speed = 1.0;
+            if (monLevel === 1) {
+                speed = 1.5;
+            } else if (monLevel === 2) {
+                // 等級 2: 使用三次方程式 (s^3) 配合不對稱振幅
+                // 正轉與反轉的最高速度不同，這會導致每次煞車的停止位置都在圓周的不同角度！
+                // s^3 曲線在接近 0 的時候，會提供一段非常長且明顯的「煞車與懸停」時間，讓玩家能輕鬆瞄準。
+                let s = Math.sin(monFrameCount * 0.012); 
+                let amp = (s > 0) ? 4.0 : 2.2; 
+                speed = s * s * s * amp; 
+            } else {
+                // 等級 3: 稍快的週期，並加入一點動態漂移，讓每次煞車的落點更加不規則且遍佈 360 度
+                let s = Math.sin(monFrameCount * 0.015);
+                let drift = Math.cos(monFrameCount * 0.005);
+                let amp = (s > 0) ? (5.0 + drift) : (3.0 - drift);
+                speed = s * s * s * amp;
+            }
+            monRotation += speed; 
             const target = document.getElementById('mon-target-circle'); const layer = document.getElementById('mon-stuck-layer');
             if (target) target.style.transform = `rotate(${monRotation}deg)`; if (layer) layer.style.transform = `rotate(${monRotation}deg)`;
             monAnimId = requestAnimationFrame(monLoop);
@@ -301,6 +330,14 @@
                     monStuckAngles.push(hitAngle);
                     const pen = document.createElement('div'); pen.className = 'pen-stuck'; pen.style.transform = `rotate(${hitAngle}deg)`; pen.innerHTML = `<div class="pen-tip"></div><div class="pen-body"></div>`;
                     document.getElementById('mon-stuck-layer').appendChild(pen);
+                    
+                    // 加入圓形彈性震動特效
+                    const wrap = document.getElementById('mon-target-wrap');
+                    wrap.classList.remove('mon-hit-anim');
+                    void wrap.offsetWidth; // 觸發重繪
+                    wrap.classList.add('mon-hit-anim');
+                    if (navigator.vibrate) navigator.vibrate(15);
+                    
                     monPensLeft--; document.getElementById('mon-pens-left').innerText = monPensLeft;
                     shooter.style.transition = 'none'; shooter.style.marginTop = '100px'; monIsShooting = false;
                     if (monPensLeft <= 0) {
@@ -583,7 +620,7 @@
             reader.readAsDataURL(file);
         }
 
-        // --- 星期五 (Friday) 氣球改為正圓形、難度下調 ---
+        // --- 星期五 (Friday) 氣球改為正圓形、難度大幅下調 ---
         function renderFriday(scene) {
             if (friState === 'setup') {
                 scene.innerHTML = `
@@ -620,10 +657,11 @@
                         <button id="fri-pump-btn" class="w-64 py-6 bg-emerald-600 text-white font-black rounded-2xl shadow-xl active:scale-95">充氣！</button>
                     </div>
                 `;
-                
+            
                 const pump = (e) => {
                     e.preventDefault(); if (friIsExploded) return;
-                    friPopProgress = Math.min(100, friPopProgress + 15); 
+                    // 大幅增加點擊的充氣量 (15 -> 25)
+                    friPopProgress = Math.min(100, friPopProgress + 25); 
                     if (navigator.vibrate) navigator.vibrate(15);
                 };
                 document.getElementById('fri-pump-btn').onpointerdown = pump;
@@ -635,7 +673,8 @@
         function friLoop() {
             if (currentDay !== 5 || friState !== 'playing') return;
             if (friPopProgress > 0 && !friIsExploded) {
-                friPopProgress -= 0.15; 
+                // 大幅減緩漏氣速度 (0.15 -> 0.05)
+                friPopProgress -= 0.05; 
                 const balloon = document.getElementById('fri-balloon-wrap');
                 const balloonInner = document.getElementById('fri-balloon');
                 const knot = document.getElementById('fri-knot');
@@ -666,7 +705,7 @@
                 scene.innerHTML = `
                     <div class="glass-card p-8 flex flex-col items-center gap-6 w-80 text-center mx-auto">
                         <div class="flex items-center justify-center h-32 w-full relative bg-gray-300 rounded-xl shadow-inner overflow-hidden border border-gray-400">
-                            <div class="absolute w-16 h-16 z-0 flex items-center justify-center"><img src="${LIFE_COIN_SRC}" class="w-full h-full object-contain drop-shadow-md"></div>
+                            <div class="absolute w-16 h-16 z-0 flex items-center justify-center"><img src="${LIFE_COIN_SRC}" onerror="this.src='${fallbackCoinSrc}'" class="w-full h-full object-contain drop-shadow-md"></div>
                             <div class="absolute inset-0 bg-gray-400 z-10 opacity-90" style="animation: demoSatCloud 3s infinite;"></div>
                             <div class="absolute text-4xl z-20" style="animation: demoSatSwipe 3s infinite;">👆</div>
                         </div>
@@ -712,6 +751,7 @@
                 coinContainer.className = 'absolute w-16 h-16 transition-all duration-500 transform scale-50 opacity-0 drop-shadow-xl flex items-center justify-center pointer-events-none';
                 coinContainer.style.left = `${x - 32}px`; coinContainer.style.top = `${y - 32}px`;
                 const coin = document.createElement('img');
+                coin.onerror = () => { coin.src = fallbackCoinSrc; };
                 coin.src = LIFE_COIN_SRC;
                 coin.className = 'w-full h-full object-contain';
                 coinContainer.appendChild(coin);
@@ -788,7 +828,7 @@
                     <div class="glass-card p-8 flex flex-col items-center gap-4 w-80 text-center mx-auto">
                         <div class="h-32 w-full relative bg-blue-50 rounded-xl overflow-hidden border-2 border-gray-200">
                             <div class="absolute w-12 h-12 flex items-center justify-center" style="animation: demoSunCoin 3s infinite linear;">
-                                <img src="${LIFE_COIN_SRC}" class="w-full h-full object-contain">
+                                <img src="${LIFE_COIN_SRC}" onerror="this.src='${fallbackCoinSrc}'" class="w-full h-full object-contain">
                             </div>
                             <div class="absolute bottom-2 w-16 h-8 bg-orange-400 rounded-b-xl rounded-t-sm" style="animation: demoSunBasket 3s infinite ease-in-out;"></div>
                         </div>
@@ -811,7 +851,13 @@
                  
                  const coinImg = new Image();
                  coinImg.onload = () => { sunState = 'playing'; sunLoop(coinImg); };
-                 coinImg.onerror = () => { console.error("Coin image failed to load, starting game anyway"); sunState = 'playing'; sunLoop(coinImg); };
+                 coinImg.onerror = () => { 
+                     if (coinImg.src !== fallbackCoinSrc) {
+                         coinImg.src = fallbackCoinSrc; 
+                     } else {
+                         sunState = 'playing'; sunLoop(coinImg);
+                     }
+                 };
                  coinImg.src = LIFE_COIN_SRC;
             }
         }
